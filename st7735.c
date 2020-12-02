@@ -7,7 +7,7 @@
 #define ST7735_COL_OFFSET 2
 #define ST7735_ROW_OFFSET 1
 #define ST7735_RES 2 
-#define ST7735_DC  1
+#define ST7735_DC  4
 #define ST7735_CE  3
 
 void st7735_test(gpio_t *gpio, spi_t *spi, systick_t *tick)

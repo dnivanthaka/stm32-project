@@ -6,9 +6,7 @@
 #include "st7735.h"
 #include "i2c.h"
 #include "interrupts.h"
-
-
-#define KEYPAD_ADDR 0x20
+#include "keypad.h"
 
 
 struct exti *EXTI = (struct exti *)EXTIBASE;
@@ -53,37 +51,6 @@ void nvic_disable_irq(uint32_t irq){
     ptr->iser[irq / 32] &= ~(1 << (irq % 32));
 }
 
-void mcp23s17_write(i2c_t *i2c, uint8_t reg, uint8_t data){
-
-    do{
-      i2c_wait_for_ready(i2c);
-      i2c_send_start(i2c);
-    }while(i2c_send_addr_for_write(i2c, KEYPAD_ADDR) != 0);
-
-    i2c_write_data(i2c, reg);
-    i2c_write_data(i2c, data);
-    i2c_send_stop(i2c);
-}
-
-uint8_t mcp23s17_read(i2c_t *i2c, uint8_t reg){
-    uint8_t ret = 0;
-
-    do{
-      i2c_wait_for_ready(i2c);
-      i2c_send_start(i2c);
-    }while(i2c_send_addr_for_write(i2c, KEYPAD_ADDR) != 0);
-
-    i2c_write_data(i2c, reg);
-
-    do{
-      i2c_send_start(i2c);
-    }while(i2c_send_addr_for_read(i2c, KEYPAD_ADDR) != 0);
-
-    ret = i2c_read_data(i2c, 0);
-    i2c_send_stop(i2c);
-
-    return ret;
-}
 
 int startup(){
     uint16_t mcp_data = 0;
@@ -111,11 +78,10 @@ int startup(){
     //RES
     gpio_init(gpio_a, rcc, 2, GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
     //D/C
-    gpio_init(gpio_a, rcc, 1, GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
+    gpio_init(gpio_a, rcc, 4, GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
     //CE
     gpio_init(gpio_a, rcc, 3, GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
 
-    gpio_init(gpio_a, rcc, 4, GPIO_MODE_INPUT | GPIO_CNF_IN_PULL );
     gpio_init(gpio_b, rcc, 4, GPIO_MODE_INPUT | GPIO_CNF_IN_PULL );
 
     gpio_init(gpio_c, rcc, 13, GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
@@ -155,35 +121,9 @@ int startup(){
     spi_init(spi1, SPI_MASTER, SPI_MODE_UNI2 | SPI_OUTPUT_ENABLE, 
             SPI_DFF_8BIT, SPI_CLK_DIV2, SPI_CPOL_0, SPI_CPHA_1, SPI_SLAVE_MGMT_DISABLE);
 
-    uint8_t i2c_addr = 0x20;
+    keypad_init(i2c1, rcc);
 
-    i2c_init(i2c1, rcc);
-
-    mcp23s17_write(i2c1, 0x00, 0xff);
-    mcp23s17_write(i2c1, 0x01, 0xff);
-    //mcp23s17_write(i2c1, 0x14, 0xf0);
-    //mcp23s17_write(i2c1, 0x15, 0xf0);
-    //mcp23s17_write(i2c1, 0x01, 0xff);
-
-    //enable pullups
-    mcp23s17_write(i2c1, 0x0C, 0xff);
-    mcp23s17_write(i2c1, 0x0D, 0xff);
-
-    //enable interrupts
-    mcp23s17_write(i2c1, 0x06, 0xff);
-    mcp23s17_write(i2c1, 0x07, 0xff);
-
-    mcp23s17_write(i2c1, 0x0e, 0);
-    mcp23s17_write(i2c1, 0x0f, 0);
-
-    mcp23s17_write(i2c1, 0x08, 0xff);
-    mcp23s17_write(i2c1, 0x09, 0xff);
-
-    mcp23s17_write(i2c1, 0x04, 0xff);
-    mcp23s17_write(i2c1, 0x05, 0xff);
-
-
-    //st7735_init(gpio_a, spi1, syt);
+    st7735_init(gpio_a, spi1, syt);
     //Turn off led
     gpio_out(gpio_c, 13, 1);
     ledVal = 0;
@@ -191,7 +131,7 @@ int startup(){
     //interrupt_handler();
 
 
-    //st7735_fill_screen(Color565(255,0,0), gpio_a, spi1);
+    st7735_fill_screen(Color565(0,0,255), gpio_a, spi1);
     //gpio_out(gpio_a, 2, 1);
     //gpio_out(gpio_a, 3, 1);
 
@@ -208,25 +148,77 @@ int startup(){
     //spi_transfer(spi1, 0xff);
     //gpio_out(gpio_a, 3, 1);
 
+    int x_vel = 0, y_vel = 0;
+    uint8_t x_pos = 0, y_pos = 0, x_prev = 0, y_prev = 0;
+    
+    st7735_tearing_off(gpio_a, spi1);
+
     while(1){
-	uint8_t inp = mcp23s17_read(i2c1, 0x12);
+	
+	uint8_t inp = (keypad_read(i2c1) & 0x00ff);
+	inp = ~inp;
+        if(inp){
+	    //NB display is horizontal
+	    //up	
+	    if(inp & 0x01){
+	     x_vel = 1;
+	    }
+	    //down	
+	    if(inp & 0x02){
+	     x_vel = -1;
+	    }
+	    //left
+	    if(inp & 0x04){
+	     y_vel = -1;
+	    }
+	    //right
+	    if(inp & 0x08){
+	     y_vel = 1;
+	    }
+	}else{
+	    x_vel = 0;
+	    y_vel = 0;
+	    continue;
+	}
+
+        x_prev = x_pos;
+        y_prev = y_pos;
+	/*
+	inp = ((keypad_read(i2c1) & 0xff00) >> 8);
 	inp = ~inp;
         if(inp){	
 	    gpio_out(gpio_c, 13, 0);
 	    continue;
 	}
-	inp = mcp23s17_read(i2c1, 0x13);
-	inp = ~inp;
-        if(inp){	
-	    gpio_out(gpio_c, 13, 0);
-	    continue;
-	}
-	//gpio_out(gpio_c, 13, 0);
-    	//gpio_out(gpio_a, 2, 0);
-	//delay_ms(syt, 10);
 	gpio_out(gpio_c, 13, 1);
-    	//gpio_out(gpio_a, 2, 1);
-	//delay_ms(syt, 10);
+	*/
+        if(x_pos + x_vel + 8 > ST7735_TFTWIDTH)
+        {
+            x_vel = 0;
+        }
+
+        if(x_pos + x_vel < 0)
+        {
+            x_vel = 0;
+        }
+
+        if(y_pos + y_vel + 8 > ST7735_TFTHEIGHT)
+        {
+            y_vel = 0;
+        }
+
+        if(y_pos + y_vel < 0)
+        {
+            y_vel = 0;
+        }
+
+        x_pos += x_vel;
+        y_pos += y_vel;
+
+        st7735_fill_rect(x_prev, y_prev, 8, 8, Color565(0,0,255), gpio_a, spi1);
+        st7735_fill_rect(x_pos, y_pos, 8, 8, Color565(0,0,0), gpio_a, spi1);
+        delay_ms(syt, 50);
+
     }
 
  return 0;
