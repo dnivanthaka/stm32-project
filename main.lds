@@ -1,23 +1,41 @@
-/* blink.lds
- * linker script for blink demo.
- *
- * Memory layout on my STM32F103 is pretty much like this:
- *
- * 0x00000000 - 0x07ffffff - aliased to flash or sys memory depending on BOOT jumpers
- * 0x08000000 - 0x0800ffff - Flash (64K ... or 128K)
- * 0x1ffff000 - 0x1ffff7ff - Boot firmware in system memory
- * 0x1ffff800 - 0x1fffffff - option bytes
- * 0x20000000 - 0x20004fff - SRAM (20k)
- * 0x40000000 - 0x40023400 - peripherals
- */
+
 MEMORY
 {
-   flash(RX)  : ORIGIN = 0x00000000, LENGTH = 128K
-   sram(WAIL) : ORIGIN = 0x20000000, LENGTH = 20K
+    rom : ORIGIN = 0x08000000, LENGTH = 0x1000 
+    ram : ORIGIN = 0x20000000, LENGTH = 0x1000
 }
 
 SECTIONS
 {
-   .text : { *(.text*) } > flash
-   .bss  : { *(.bss*) } > sram
-}
+    .text :				/* Define output file TEXT section */
+    {
+        *(.vectors)                     /* Vector table */
+        *(.text)                        /* Program code */
+		. = ALIGN(4);		/* Make sure data that follows are aligned to 4 byte boundary */
+		*(.rodata)		/* Read only, section set asside for constants */
+    } >rom
+	
+	
+	.data :				/* Define output file DATA section */
+	{
+		_data_start = .;	/* Get the memory address (VMA) for start of section .data */
+		*(.data)		/* Initialized static and global variable values */
+		. = ALIGN(4); 
+		_data_end = .;		/* Get the memory address (VMA) for end of section .data */
+	} >ram AT >rom			/* After AT we specify the load-time location */
+	
+	_data_load = LOADADDR(.data);	/* Get the load memory address (LMA) for section .data */
+	
+	
+	.bss :				/* Define output file BSS section */
+	{
+		_bss_start = .;		/* Get memory address of start of bss section */
+		*(.bss)			/* Uninitialized static and global variables */
+		*(COMMON)		/* Uninitialized variables are placed in COMMON section for object files */
+		. = ALIGN(4);	
+		_bss_end = .;		/* Get memory address of end of bss section */
+	} >ram
+	
+} 
+
+

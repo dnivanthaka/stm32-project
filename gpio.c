@@ -20,9 +20,10 @@ void gpio_init(gpio_t *gpio, rcc_t *rcc, uint8_t pin, uint8_t mode){
  gpio->cr[i] = prev | (mode << shift);
 
  //check if input
- if(!(mode & 0xC0)){
+ mode = (mode & 0x3); 
+ if(! mode){
     //set as pull up
-    gpio->odr = (1 << pin);
+    //gpio->odr = (1 << pin);
  }
 }
 

@@ -1,9 +1,10 @@
+.section .vectors
 .cpu cortex-m3
 .thumb
 
 /*---------------- Setup vector table entries -----------------*/
 
-.word 0x20003000 /*SP*/
+.word 0x20005000 /*SP 20480bytes = 0x5000*/
 .word _reset     /*Reset*/
 .word hang       /*NMI*/
 .word hang       /*Hard fault*/
@@ -41,6 +42,8 @@
 .word hang       /*ADC1_2*/
 .word hang       /*CAN1_TX*/
 .word hang       /*CAN1_RX0*/
+
+.section .text
 
 .thumb_func
 hang: b hang

@@ -16,7 +16,7 @@ OBJCOPY = $(TOOLS)-objcopy
 DUMP = $(TOOLS)-objdump -d
 GDB = $(TOOLS)-gdb
 
-OBJS = start.o gpio.o rcc.o usart.o main.o spi.o i2c.o st7735.o keypad.o
+OBJS = start.o startup.o gpio.o rcc.o usart.o main.o spi.o i2c.o st7735.o keypad.o
 
 all: main.bin main.dump
 
@@ -27,10 +27,13 @@ main.bin:	main.elf
 	$(OBJCOPY) main.elf main.bin -O binary
 
 main.elf: 	$(OBJS)
-	$(LD) -T main.lds -o main.elf $(OBJS)
+	$(LD) -Aarch=armv7-m -T main.lds -o main.elf $(OBJS)
 
 start.o:	start.s
 	$(AS) start.s -o start.o
+
+startup.o:	startup.c
+	$(CC) -c startup.c
 
 main.o:	main.c
 	$(CC) -c main.c

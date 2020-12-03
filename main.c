@@ -12,11 +12,13 @@
 struct exti *EXTI = (struct exti *)EXTIBASE;
 struct gpio_t *GPIOC = (struct gpio_t *)GPIOCBASE;
 struct afio *AFIO = (struct afio *)AFIOBASE;
+i2c_t *I2C1 = (i2c_t *)I2C1BASE;
 
 void PUT32(uint32_t, uint32_t);
 unsigned int GET32(uint32_t);
 
 uint8_t ledVal = 0;
+volatile uint16_t keypadkeys = 0xffff;
 
 void spi_mcp23s17_write(spi_t *spi, uint8_t addr, uint8_t reg, uint8_t val){
      spi_transfer(spi, addr);
@@ -25,8 +27,8 @@ void spi_mcp23s17_write(spi_t *spi, uint8_t addr, uint8_t reg, uint8_t val){
 }
 
 void interrupt_handler(){
-    gpio_out(GPIOC, 13, ledVal);
-    ledVal = (~ledVal) & 1;
+    keypadkeys = keypad_read(I2C1);
+    keypadkeys = 0;
 
     EXTI->pr = (1 << 4); //Clearing the pending flag
 }
@@ -52,8 +54,9 @@ void nvic_disable_irq(uint32_t irq){
 }
 
 
-int startup(){
+int main(){
     uint16_t mcp_data = 0;
+
     gpio_t *gpio_c = (struct gpio_t *) GPIOCBASE;
     gpio_t *gpio_b = (struct gpio_t *) GPIOBBASE;
     gpio_t *gpio_a = (struct gpio_t *) GPIOABASE;
@@ -82,7 +85,10 @@ int startup(){
     //CE
     gpio_init(gpio_a, rcc, 3, GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
 
-    gpio_init(gpio_b, rcc, 4, GPIO_MODE_INPUT | GPIO_CNF_IN_PULL );
+    //gpio_init(gpio_b, rcc, 4, GPIO_MODE_INPUT | GPIO_CNF_IN_PULL );
+    gpio_init(gpio_b, rcc, 4, GPIO_MODE_INPUT | GPIO_CNF_IN_FLOAT );
+
+    //gpio_init(gpio_b, rcc, 5, GPIO_MODE_INPUT | GPIO_CNF_IN_PULL );
 
     gpio_init(gpio_c, rcc, 13, GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
 
@@ -106,15 +112,11 @@ int startup(){
     rcc->apb2enr |= (1 << 12) | 1;
     //rcc->apb2enr |= 0x4000;
 
+    
+    //gpio_b->odr = (1 << 5); //pullup for pb5
+
     //gpio_out(gpio_a, 4, 1);
     //
-    //Setting up interrupts
-    //AFIO->exticr[1] = 1 << 0;   //PB4 as input
-    //EXTI->ftsr = (1 << 4); //falling edge
-    //EXTI->imr = (1 << 4);  // enable interrupt exti4
-
-    //nvic_enable_irq(EXTI4_IRQ);
-
 
     usart_init(usart);
 
@@ -123,15 +125,25 @@ int startup(){
 
     keypad_init(i2c1, rcc);
 
+    gpio_b->odr &= ~(1 << 4); //with pullup for pb4
+
+    //Setting up interrupts
+    AFIO->exticr[1] = 1 << 0;   //PB4 as input
+    EXTI->ftsr = (1 << 4); //falling edge
+    EXTI->imr = (1 << 4);  // enable interrupt exti4
+
+    nvic_enable_irq(EXTI4_IRQ);
+
+
     st7735_init(gpio_a, spi1, syt);
+
     //Turn off led
-    gpio_out(gpio_c, 13, 1);
+    //gpio_out(gpio_c, 13, 0);
     ledVal = 0;
 
-    //interrupt_handler();
-
-
     st7735_fill_screen(Color565(0,0,255), gpio_a, spi1);
+
+    //interrupt_handler();
     //gpio_out(gpio_a, 2, 1);
     //gpio_out(gpio_a, 3, 1);
 
@@ -154,10 +166,23 @@ int startup(){
     st7735_tearing_off(gpio_a, spi1);
 
     while(1){
+
+	//if(keypadkeys == 0xffff){
+	    //continue;
+	//}
 	
-	uint8_t inp = (keypad_read(i2c1) & 0x00ff);
+	//uint8_t inp = (keypad_read(i2c1) & 0x00ff);
+	//uint8_t inp = (keypadkeys & 0x00ff);
+	uint8_t inp = keypadkeys;
+	//uint8_t inp = gpio_in(gpio_b, 5);
 	inp = ~inp;
-        if(inp){
+	if(inp){
+	    x_vel = 1;
+	}else{
+	    continue;
+	}
+    	st7735_fill_screen(Color565(255,0,0), gpio_a, spi1);
+        /*if(inp){
 	    //NB display is horizontal
 	    //up	
 	    if(inp & 0x01){
@@ -179,7 +204,7 @@ int startup(){
 	    x_vel = 0;
 	    y_vel = 0;
 	    continue;
-	}
+	}*/
 
         x_prev = x_pos;
         y_prev = y_pos;
@@ -215,7 +240,7 @@ int startup(){
         x_pos += x_vel;
         y_pos += y_vel;
 
-        st7735_fill_rect(x_prev, y_prev, 8, 8, Color565(0,0,255), gpio_a, spi1);
+        //st7735_fill_rect(x_prev, y_prev, 8, 8, Color565(0,0,255), gpio_a, spi1);
         st7735_fill_rect(x_pos, y_pos, 8, 8, Color565(0,0,0), gpio_a, spi1);
         delay_ms(syt, 50);
 
