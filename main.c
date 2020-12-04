@@ -8,6 +8,7 @@
 #include "i2c.h"
 #include "interrupts.h"
 #include "keypad.h"
+#include "console_system.h"
 
 
 //struct exti *EXTI = (struct exti *)EXTIBASE;
@@ -163,7 +164,8 @@ int main(){
     nvic_enable_irq(EXTI4_IRQ);
 
 
-    st7735_init(gpio_a, spi1, syt);
+    //st7735_init(gpio_a, spi1, syt);
+    screen_init();
 
     //Turn off led
     //gpio_out(gpio_c, 13, 0);
