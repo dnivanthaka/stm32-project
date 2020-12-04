@@ -30,8 +30,8 @@
 .word hang       /*EXTI0*/
 .word hang       /*EXTI1*/
 .word hang       /*EXTI2*/
-.word hang       /*EXTI3*/
-.word interrupt_handler       /*EXTI4*/
+.word exti3_irq_handler       /*EXTI3*/
+.word exti4_irq_handler       /*EXTI4*/
 .word hang       /*DMA 1*/
 .word hang       /*DMA 2*/
 .word hang       /*DMA 3*/
@@ -42,6 +42,9 @@
 .word hang       /*ADC1_2*/
 .word hang       /*CAN1_TX*/
 .word hang       /*CAN1_RX0*/
+.word hang       /*CAN_RX1*/
+.word hang       /*CAN_SCE*/
+.word exti9_5_irq_handler  /*EXTI 9 -5*/
 
 .section .text
 

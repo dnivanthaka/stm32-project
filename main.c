@@ -1,4 +1,5 @@
-#include "globals.h"
+#include "types.h"
+#include "stmf103xxx.h"
 #include "rcc.h"
 #include "gpio.h"
 #include "usart.h"
@@ -9,10 +10,10 @@
 #include "keypad.h"
 
 
-struct exti *EXTI = (struct exti *)EXTIBASE;
-struct gpio_t *GPIOC = (struct gpio_t *)GPIOCBASE;
-struct afio *AFIO = (struct afio *)AFIOBASE;
-i2c_t *I2C1 = (i2c_t *)I2C1BASE;
+//struct exti *EXTI = (struct exti *)EXTIBASE;
+//struct gpio_t *GPIOC = (struct gpio_t *)GPIOCBASE;
+//struct afio *AFIO = (struct afio *)AFIOBASE;
+//i2c_t *I2C1 = (i2c_t *)I2C1BASE;
 
 void PUT32(uint32_t, uint32_t);
 unsigned int GET32(uint32_t);
@@ -26,11 +27,25 @@ void spi_mcp23s17_write(spi_t *spi, uint8_t addr, uint8_t reg, uint8_t val){
      spi_transfer(spi, val);
 }
 
-void interrupt_handler(){
+void exti4_irq_handler(){
     keypadkeys = keypad_read(I2C1);
     keypadkeys = 0;
 
     EXTI->pr = (1 << 4); //Clearing the pending flag
+}
+
+void exti3_irq_handler(){
+    keypadkeys = keypad_read(I2C1);
+    keypadkeys = 0;
+
+    EXTI->pr = (1 << 3); //Clearing the pending flag
+}
+
+void exti9_5_irq_handler(){
+    keypadkeys = keypad_read(I2C1);
+    keypadkeys = 0;
+
+    EXTI->pr = (1 << 5); //Clearing the pending flag
 }
 
 void nvic_enable_irq(uint32_t irq){
@@ -40,7 +55,7 @@ void nvic_enable_irq(uint32_t irq){
        return; 
     }
 
-    ptr->iser[irq / 32] = 1 << (irq % 32);
+    ptr->iser[irq / 32] |= 1 << (irq % 32);
 }
 
 void nvic_disable_irq(uint32_t irq){
@@ -85,10 +100,11 @@ int main(){
     //CE
     gpio_init(gpio_a, rcc, 3, GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
 
-    //gpio_init(gpio_b, rcc, 4, GPIO_MODE_INPUT | GPIO_CNF_IN_PULL );
     gpio_init(gpio_b, rcc, 4, GPIO_MODE_INPUT | GPIO_CNF_IN_FLOAT );
 
-    //gpio_init(gpio_b, rcc, 5, GPIO_MODE_INPUT | GPIO_CNF_IN_PULL );
+    gpio_init(gpio_b, rcc, 5, GPIO_MODE_INPUT | GPIO_CNF_IN_FLOAT );
+
+    gpio_init(gpio_b, rcc, 3, GPIO_MODE_INPUT | GPIO_CNF_IN_FLOAT );
 
     gpio_init(gpio_c, rcc, 13, GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
 
@@ -125,13 +141,25 @@ int main(){
 
     keypad_init(i2c1, rcc);
 
-    gpio_b->odr &= ~(1 << 4); //with pullup for pb4
+    gpio_b->odr &= ~(1 << 4); //without pullup for pb4
+    //gpio_b->odr &= ~(1 << 3); //without pullup for pb3
+    gpio_b->odr &= ~(1 << 5); //without pullup for pb5
 
     //Setting up interrupts
+    //AFIO->exticr[0] = 1 << 12;   //PB3 as input
     AFIO->exticr[1] = 1 << 0;   //PB4 as input
-    EXTI->ftsr = (1 << 4); //falling edge
-    EXTI->imr = (1 << 4);  // enable interrupt exti4
+    AFIO->exticr[1] |= 1 << 4;   //PB4 as input
+    
+    //EXTI->ftsr = (1 << 3); //falling edge
+    EXTI->ftsr = (1 << 5); //falling edge
+    EXTI->ftsr |= (1 << 4); //falling edge
 
+    //EXTI->imr = (1 << 3);  // enable interrupt exti3
+    EXTI->imr = (1 << 5);  // enable interrupt exti3
+    EXTI->imr |= (1 << 4);  // enable interrupt exti4
+
+    //nvic_enable_irq(EXTI3_IRQ);
+    nvic_enable_irq(EXTI9_5_IRQ);
     nvic_enable_irq(EXTI4_IRQ);
 
 

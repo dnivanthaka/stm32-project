@@ -1,9 +1,6 @@
 #ifndef I2C_H
 #define I2C_H
 
-#define I2C1BASE 0x40005400
-#define I2C2BASE 0x40005800
-
 #define I2C_MODE_MASTER_SM    (0 << 15)
 #define I2C_MODE_MASTER_FM    (1 << 15)
 #define I2C_FM_MODE_DUTY_2    (0 << 14)
@@ -15,7 +12,6 @@
 #define I2C_STAT_RxNE    (1 << 6)
 
 #define I2C_ACK_ENABLE   (1 << 10)
-
 
 typedef struct i2c_t {
     volatile uint32_t cr1;

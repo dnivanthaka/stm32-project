@@ -1,10 +1,6 @@
 #ifndef GPIO_H
 #define GPIO_H
 
-#define GPIOABASE  0x40010800
-#define GPIOBBASE  0x40010C00
-#define GPIOCBASE  0x40011000
-
 #define GPIO_CNF_IN_ANALOG    0x0
 #define GPIO_CNF_IN_FLOAT     0x4
 #define GPIO_CNF_IN_PULL      0x8
@@ -24,7 +20,6 @@
 #define GPIO_IOPBEN           1 << 3
 #define GPIO_IOPCEN           1 << 4
 
-#include "globals.h"
 
 typedef struct gpio_t {
     volatile uint32_t cr[2];

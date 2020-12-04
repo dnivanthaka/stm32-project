@@ -1,11 +1,6 @@
 #ifndef INTERRUPTS_H
 #define INTERRUPTS_H
 
-#define EXTIBASE 0x40010400 
-#define SCBBASE  0xE000E008 
-#define NVICBASE 0xE000E100
-#define AFIOBASE 0x40010000
-
 #define MAX_IRQ 68
 
 #define EXTI0_IRQ 6
@@ -13,15 +8,16 @@
 #define EXTI2_IRQ 8
 #define EXTI3_IRQ 9
 #define EXTI4_IRQ 10 
+#define EXTI9_5_IRQ 23
 
-typedef struct exti {
+typedef struct exti_t {
     volatile uint32_t imr;
     volatile uint32_t emr;
     volatile uint32_t rtsr;
     volatile uint32_t ftsr;
     volatile uint32_t swier;
     volatile uint32_t pr;
-} exti;
+} exti_t;
 
 struct scb {
     volatile uint32_t actlr;
@@ -41,11 +37,11 @@ struct nvic {
     volatile uint32_t stir;
 } nvic;
 
-struct afio {
+typedef struct afio_t {
     volatile uint32_t evcr;
     volatile uint32_t mapr;
     volatile uint32_t exticr[4];
     volatile uint32_t mapr2;
-} afio;
+} afio_t;
 
 #endif

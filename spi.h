@@ -1,9 +1,6 @@
 #ifndef SPI_H
 #define SPI_H
 
-
-#define SPI1BASE       0x40013000
-
 #define SPI_CLK_DIV2   0b000
 #define SPI_CLK_DIV4   0b001
 #define SPI_CLK_DIV8   0b010

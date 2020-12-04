@@ -1,4 +1,5 @@
-#include "globals.h"
+#include "types.h"
+#include "stmf103xxx.h"
 #include "spi.h"
 
 void spi_init(spi_t *spi, uint8_t mode, uint8_t dir, uint8_t frame_format, 

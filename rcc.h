@@ -1,10 +1,6 @@
 #ifndef RCC_H
 #define RCC_H
 
-#define RCCBASE    0x40021000
-
-#define PLL_LOCK	0x02000000
-
 #define PLL_HSE		0x10000	/* 1 is HSE, 0 is HSI/2 */
 #define PLL_HSI		0x00000
 
@@ -41,7 +37,6 @@
 #define PPRE1_8         (6<<8)
 #define PPRE1_16        (7<<8)
 
-
 #define APB1_DIV2	(4<<8)
 
 #define PLL_HSE		0x10000
@@ -56,14 +51,10 @@
 #define PLL_ENABLE	0x01000000
 #define FLASH_ACR      ((volatile uint32_t *) 0x40022000)
 
-#define SYSTICKBASE 0xE000E010
-
 #define SYT_COUNTF   (1 << 16)
 #define SYT_SRC      (1 << 2)
 #define SYT_ENABLE   (1)
 
-
-#include "globals.h"
 
 typedef struct rcc_t {
     volatile uint32_t cr;

@@ -1,8 +1,6 @@
 #ifndef USART_H
 #define USART_H
 
-#define USART1BASE 0x40013800
-
 #define SR_TXE    (1 << 7)
 #define SR_RXNE   (1 << 5)
 

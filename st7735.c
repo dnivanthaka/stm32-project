@@ -1,4 +1,4 @@
-#include "globals.h"
+#include "types.h"
 #include "rcc.h"
 #include "gpio.h"
 #include "spi.h"

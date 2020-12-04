@@ -1,4 +1,5 @@
-#include "globals.h"
+#include "types.h"
+#include "stmf103xxx.h"
 #include "rcc.h"
 
 /*
