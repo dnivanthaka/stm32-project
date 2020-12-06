@@ -6,6 +6,7 @@
 #include "rcc.h"
 #include "gpio.h"
 #include "usart.h"
+#include "interrupts.h"
 #include "i2c.h"
 
 
@@ -13,6 +14,7 @@ void PUT32(uint32_t, uint32_t);
 unsigned int GET32(uint32_t);
 
 void i2c_init(i2c_t *i2c, rcc_t *rcc){
+    _disable_irq();
 
     //enable i2c clocks, should have gpio clocks enabled	
     if(i2c == (struct i2c_t *)I2C1BASE){
@@ -32,6 +34,7 @@ void i2c_init(i2c_t *i2c, rcc_t *rcc){
     //i2c->oar2 |= 0b10101100;
 
     i2c->cr1 = 1;
+    _enable_irq();
 }
 
 void i2c_wait_for_ready(i2c_t *i2c){

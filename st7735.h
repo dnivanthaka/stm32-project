@@ -56,10 +56,8 @@
 #define ST7735_GMCTRP1 0xE0
 #define ST7735_GMCTRN1 0xE1
 
-
 // Pass 8-bit (each) R,G,B, get back 16-bit packed color
 #define Color565(r,g,b) (uint16_t)((b & 0xF8) << 8) | ((g & 0xFC) << 3) | (r >> 3)
-
 
 void st7735_hwreset(gpio_t *gpio, systick_t *tick);
 void st7735_command(uint8_t cmd, gpio_t *gpio, spi_t *spi);

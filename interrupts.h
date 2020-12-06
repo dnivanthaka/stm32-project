@@ -44,4 +44,10 @@ typedef struct afio_t {
     volatile uint32_t mapr2;
 } afio_t;
 
+
+void nvic_enable_irq(uint32_t irq);
+void nvic_disable_irq(uint32_t irq);
+void _disable_irq();
+void _enable_irq();
+
 #endif

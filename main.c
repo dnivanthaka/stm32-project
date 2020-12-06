@@ -11,189 +11,47 @@
 #include "console_system.h"
 
 
-//struct exti *EXTI = (struct exti *)EXTIBASE;
-//struct gpio_t *GPIOC = (struct gpio_t *)GPIOCBASE;
-//struct afio *AFIO = (struct afio *)AFIOBASE;
-//i2c_t *I2C1 = (i2c_t *)I2C1BASE;
-
 void PUT32(uint32_t, uint32_t);
 unsigned int GET32(uint32_t);
 
 uint8_t ledVal = 0;
 volatile uint16_t keypadkeys = 0xffff;
 
-void spi_mcp23s17_write(spi_t *spi, uint8_t addr, uint8_t reg, uint8_t val){
-     spi_transfer(spi, addr);
-     spi_transfer(spi, reg);
-     spi_transfer(spi, val);
-}
-
-void exti4_irq_handler(){
-    keypadkeys = keypad_read(I2C1);
-    keypadkeys = 0;
-
-    EXTI->pr = (1 << 4); //Clearing the pending flag
-}
 
 void exti3_irq_handler(){
-    keypadkeys = keypad_read(I2C1);
-    keypadkeys = 0;
+    //keypadkeys = keypad_read();
 
     EXTI->pr = (1 << 3); //Clearing the pending flag
 }
 
+void exti4_irq_handler(){
+    keypadkeys = keypad_read();
+
+    EXTI->pr = (1 << 4); //Clearing the pending flag
+}
+
 void exti9_5_irq_handler(){
-    keypadkeys = keypad_read(I2C1);
-    keypadkeys = 0;
+    keypadkeys = keypad_read();
 
     EXTI->pr = (1 << 5); //Clearing the pending flag
-}
-
-void nvic_enable_irq(uint32_t irq){
-    struct nvic *ptr = (struct nvic *)NVICBASE;
-
-    if(irq > MAX_IRQ){
-       return; 
-    }
-
-    ptr->iser[irq / 32] |= 1 << (irq % 32);
-}
-
-void nvic_disable_irq(uint32_t irq){
-    struct nvic *ptr = (struct nvic *)NVICBASE;
-
-    if(irq > MAX_IRQ){
-       return; 
-    }
-
-    ptr->iser[irq / 32] &= ~(1 << (irq % 32));
 }
 
 
 int main(){
     uint16_t mcp_data = 0;
 
-    gpio_t *gpio_c = (struct gpio_t *) GPIOCBASE;
-    gpio_t *gpio_b = (struct gpio_t *) GPIOBBASE;
-    gpio_t *gpio_a = (struct gpio_t *) GPIOABASE;
-    rcc_t  *rcc    = (struct rcc_t  *) RCCBASE;
-    systick_t *syt = (struct systick_t *) SYSTICKBASE;
- 
-    usart_t *usart = (usart_t *) USART1BASE;
-
-    spi_t   *spi1 = (spi_t *)SPI1BASE;
-
-    i2c_t *i2c1 = (i2c_t *)I2C1BASE;
-
-    //exti_t *exti = (struct exti_t *)EXTIBASE;
-
-    rcc_init(rcc);
-    systick_init(syt);
- 
-    /*Enable PORT A, PA9 = TX, PA10 = RX*/
-    gpio_init(gpio_a, rcc, 9,  GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_ALT_PUSH);
-    //gpio_init(gpio_a, rcc, 9,  GPIO_MODE_OUT_50_MHZ, GPIO_CNF_OUT_PUSH);
-    gpio_init(gpio_a, rcc, 10,  GPIO_MODE_INPUT | GPIO_CNF_IN_FLOAT);
-    //RES
-    gpio_init(gpio_a, rcc, 2, GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
-    //D/C
-    gpio_init(gpio_a, rcc, 4, GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
-    //CE
-    gpio_init(gpio_a, rcc, 3, GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
-
-    gpio_init(gpio_b, rcc, 4, GPIO_MODE_INPUT | GPIO_CNF_IN_FLOAT );
-
-    gpio_init(gpio_b, rcc, 5, GPIO_MODE_INPUT | GPIO_CNF_IN_FLOAT );
-
-    gpio_init(gpio_b, rcc, 3, GPIO_MODE_INPUT | GPIO_CNF_IN_FLOAT );
-
-    gpio_init(gpio_c, rcc, 13, GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
-
-    gpio_init(gpio_a, rcc, 5,  GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_ALT_PUSH);
-    //gpio_init(gpio_a, rcc, 5,  GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
-    gpio_init(gpio_a, rcc, 6,  GPIO_MODE_INPUT | GPIO_CNF_IN_PULL);
-    gpio_init(gpio_a, rcc, 7,  GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_ALT_PUSH);
-
-    gpio_init(gpio_b, rcc, 6,  GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_ALT_OPEN);              //I2C pins
-    gpio_init(gpio_b, rcc, 7,  GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_ALT_OPEN);
-
-    //rcc->apb1enr |= 1;
-
-    // Disable Reset
-    rcc->apb2rstr &= ~(1 << 14);
-    rcc->apb2rstr &= ~(1 << 12);
-
-    //Enable USART1 clock
-    rcc->apb2enr |= (1 << 14) | 1;
-    //Enable SPI1 clock
-    rcc->apb2enr |= (1 << 12) | 1;
-    //rcc->apb2enr |= 0x4000;
-
-    
-    //gpio_b->odr = (1 << 5); //pullup for pb5
-
-    //gpio_out(gpio_a, 4, 1);
-    //
-
-    usart_init(usart);
-
-    spi_init(spi1, SPI_MASTER, SPI_MODE_UNI2 | SPI_OUTPUT_ENABLE, 
-            SPI_DFF_8BIT, SPI_CLK_DIV2, SPI_CPOL_0, SPI_CPHA_1, SPI_SLAVE_MGMT_DISABLE);
-
-    keypad_init(i2c1, rcc);
-
-    gpio_b->odr &= ~(1 << 4); //without pullup for pb4
-    //gpio_b->odr &= ~(1 << 3); //without pullup for pb3
-    gpio_b->odr &= ~(1 << 5); //without pullup for pb5
-
-    //Setting up interrupts
-    //AFIO->exticr[0] = 1 << 12;   //PB3 as input
-    AFIO->exticr[1] = 1 << 0;   //PB4 as input
-    AFIO->exticr[1] |= 1 << 4;   //PB4 as input
-    
-    //EXTI->ftsr = (1 << 3); //falling edge
-    EXTI->ftsr = (1 << 5); //falling edge
-    EXTI->ftsr |= (1 << 4); //falling edge
-
-    //EXTI->imr = (1 << 3);  // enable interrupt exti3
-    EXTI->imr = (1 << 5);  // enable interrupt exti3
-    EXTI->imr |= (1 << 4);  // enable interrupt exti4
-
-    //nvic_enable_irq(EXTI3_IRQ);
-    nvic_enable_irq(EXTI9_5_IRQ);
-    nvic_enable_irq(EXTI4_IRQ);
-
-
-    //st7735_init(gpio_a, spi1, syt);
-    screen_init();
+    system_init();
 
     //Turn off led
     //gpio_out(gpio_c, 13, 0);
     ledVal = 0;
 
-    st7735_fill_screen(Color565(0,0,255), gpio_a, spi1);
-
-    //interrupt_handler();
-    //gpio_out(gpio_a, 2, 1);
-    //gpio_out(gpio_a, 3, 1);
-
-    //st7735_test(gpio_a, spi1, syt);
-    //gpio_out(gpio_a, 3, 0);
-    //spi_transfer(spi1, 0x40);
-    //spi_transfer(spi1, 0x00);
-    //spi_transfer(spi1, 0x00);
-    //gpio_out(gpio_a, 3, 1);
-    //delay_ms(syt, 200);
-    //gpio_out(gpio_a, 3, 0);
-    //spi_transfer(spi1, 0x40);
-    //spi_transfer(spi1, 0x14);
-    //spi_transfer(spi1, 0xff);
-    //gpio_out(gpio_a, 3, 1);
+    screen_fill(Color565(255,0,0));
 
     int x_vel = 0, y_vel = 0;
     uint8_t x_pos = 0, y_pos = 0, x_prev = 0, y_prev = 0;
     
-    st7735_tearing_off(gpio_a, spi1);
+    st7735_tearing_off(GPIOA, SPI1);
 
     while(1){
 
@@ -201,40 +59,34 @@ int main(){
 	    //continue;
 	//}
 	
-	//uint8_t inp = (keypad_read(i2c1) & 0x00ff);
+	//uint8_t inp = (keypad_read() & 0x00ff);
 	//uint8_t inp = (keypadkeys & 0x00ff);
-	uint8_t inp = keypadkeys;
+	uint8_t inp = keypadkeys & 0x00ff;
 	//uint8_t inp = gpio_in(gpio_b, 5);
 	inp = ~inp;
-	if(inp){
-	    x_vel = 1;
-	}else{
-	    continue;
-	}
-    	st7735_fill_screen(Color565(255,0,0), gpio_a, spi1);
-        /*if(inp){
+        if(inp){
 	    //NB display is horizontal
 	    //up	
-	    if(inp & 0x01){
+	    if(inp & 0x1){
 	     x_vel = 1;
 	    }
 	    //down	
-	    if(inp & 0x02){
+	    if(inp & 0x2){
 	     x_vel = -1;
 	    }
 	    //left
-	    if(inp & 0x04){
+	    if(inp & 0x4){
 	     y_vel = -1;
 	    }
 	    //right
-	    if(inp & 0x08){
+	    if(inp & 0x8){
 	     y_vel = 1;
 	    }
 	}else{
 	    x_vel = 0;
 	    y_vel = 0;
 	    continue;
-	}*/
+	}
 
         x_prev = x_pos;
         y_prev = y_pos;
@@ -247,17 +99,16 @@ int main(){
 	}
 	gpio_out(gpio_c, 13, 1);
 	*/
-        if(x_pos + x_vel + 8 > ST7735_TFTWIDTH)
+        if(x_pos + x_vel + 8 > SCREEN_WIDTH)
         {
             x_vel = 0;
         }
-
         if(x_pos + x_vel < 0)
         {
             x_vel = 0;
         }
 
-        if(y_pos + y_vel + 8 > ST7735_TFTHEIGHT)
+        if(y_pos + y_vel + 8 > SCREEN_HEIGHT)
         {
             y_vel = 0;
         }
@@ -270,11 +121,10 @@ int main(){
         x_pos += x_vel;
         y_pos += y_vel;
 
-        //st7735_fill_rect(x_prev, y_prev, 8, 8, Color565(0,0,255), gpio_a, spi1);
-        st7735_fill_rect(x_pos, y_pos, 8, 8, Color565(0,0,0), gpio_a, spi1);
-        delay_ms(syt, 50);
+        screen_fill_rect(x_prev, y_prev, 8, 8, Color565(0,0,255));
+        screen_fill_rect(x_pos, y_pos, 8, 8, Color565(0,0,0));
+        _delay_ms(50);
 
     }
-
  return 0;
 }
