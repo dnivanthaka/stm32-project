@@ -46,7 +46,7 @@ int main(){
     //gpio_out(gpio_c, 13, 0);
     ledVal = 0;
 
-    screen_fill(Color565(255,0,0));
+    screen_fill(Color565(0,0,255));
 
     int x_vel = 0, y_vel = 0;
     uint8_t x_pos = 0, y_pos = 0, x_prev = 0, y_prev = 0;
@@ -67,19 +67,19 @@ int main(){
         if(inp){
 	    //NB display is horizontal
 	    //up	
-	    if(inp & 0x1){
+	    if(KEYPAD_UP(inp)){
 	     x_vel = 1;
 	    }
 	    //down	
-	    if(inp & 0x2){
+	    if(KEYPAD_DOWN(inp)){
 	     x_vel = -1;
 	    }
 	    //left
-	    if(inp & 0x4){
+	    if(KEYPAD_LEFT(inp)){
 	     y_vel = -1;
 	    }
 	    //right
-	    if(inp & 0x8){
+	    if(KEYPAD_RIGHT(inp)){
 	     y_vel = 1;
 	    }
 	}else{

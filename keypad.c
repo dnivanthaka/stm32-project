@@ -57,9 +57,11 @@ uint8_t mcp23x17_read(i2c_t *i2c, uint8_t reg){
 void keypad_init(){
     i2c_init(KEYPAD_I2C, KEYPAD_RCC);
 
-
     //reset iocon to default values
     mcp23x17_write(KEYPAD_I2C, IOCON_0, 0x00);
+
+    //clearing out pending interrupts
+    keypad_read();
 
     //set ports as inputs
     mcp23x17_write(KEYPAD_I2C, IODIRA,   0xff);
@@ -73,15 +75,14 @@ void keypad_init(){
     mcp23x17_write(KEYPAD_I2C, DEFVALA_0, 0xff);
     mcp23x17_write(KEYPAD_I2C, DEFVALB_0, 0xff);
     // IoC setup
-    //mcp23x17_write(KEYPAD_I2C, INTFA_0, 0);
-    //mcp23x17_write(KEYPAD_I2C, INTFB_0, 0);
+    mcp23x17_write(KEYPAD_I2C, INTFA_0, 0);
+    mcp23x17_write(KEYPAD_I2C, INTFB_0, 0);
     //trigger IoC on previous value
     mcp23x17_write(KEYPAD_I2C, INTCONA_0, 0);
     mcp23x17_write(KEYPAD_I2C, INTCONB_0, 0);
 
     mcp23x17_write(KEYPAD_I2C, GPINTENA_0, 0xff);
     mcp23x17_write(KEYPAD_I2C, GPINTENB_0, 0xff);
-
 }
 
 uint16_t keypad_read(){

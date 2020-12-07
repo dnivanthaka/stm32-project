@@ -94,7 +94,6 @@ inline void system_init() {
     spi_init(SPI1, SPI_MASTER, SPI_MODE_UNI2 | SPI_OUTPUT_ENABLE, 
             SPI_DFF_8BIT, SPI_CLK_DIV2, SPI_CPOL_0, SPI_CPHA_1, SPI_SLAVE_MGMT_DISABLE);
 
-    keypad_init(I2C1, RCC);
 
     GPIOB->odr &= ~(1 << 4); //without pullup for pb4
     //gpio_b->odr &= ~(1 << 3); //without pullup for pb3
@@ -116,6 +115,9 @@ inline void system_init() {
     //nvic_enable_irq(EXTI3_IRQ);
     nvic_enable_irq(EXTI9_5_IRQ);
     //nvic_enable_irq(EXTI4_IRQ);
+
+    //need to do it after initializing interrupts, would freeze since the mcp23017 intrrupt fires immediately
+    keypad_init(I2C1, RCC);
 
     screen_init();
     screen_fill(Color565(0, 0, 0));
