@@ -56,8 +56,6 @@
 #define KEYPAD_LEFT(val)  (val & (1 << 2))
 #define KEYPAD_RIGHT(val) (val & (1 << 3))
 
-void mcp23x17_write(i2c_t *i2c, uint8_t reg, uint8_t data);
-uint8_t mcp23x17_read(i2c_t *i2c, uint8_t reg);
 void keypad_init();
 uint16_t keypad_read();
 

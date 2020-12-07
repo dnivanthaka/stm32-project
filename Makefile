@@ -16,7 +16,7 @@ OBJCOPY = $(TOOLS)-objcopy
 DUMP = $(TOOLS)-objdump -d
 GDB = $(TOOLS)-gdb
 
-OBJS = start.o startup.o gpio.o rcc.o interrupts.o usart.o main.o spi.o i2c.o st7735.o keypad.o
+OBJS = start.o startup.o gpio.o rcc.o interrupts.o usart.o main.o spi.o i2c.o mcp23x17.o st7735.o keypad.o
 
 all: main.bin main.dump
 
@@ -55,6 +55,9 @@ gpio.o:	gpio.c
 
 i2c.o:	i2c.c
 	$(CC) -c i2c.c
+
+mcp23x17.o:	mcp23x17.c
+	$(CC) -c mcp23x17.c
 
 st7735.o:	st7735.c
 	$(CC) -c st7735.c
