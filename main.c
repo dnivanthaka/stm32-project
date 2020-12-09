@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "types.h"
 #include "stmf103xxx.h"
 #include "rcc.h"
@@ -9,6 +11,7 @@
 #include "interrupts.h"
 #include "keypad.h"
 #include "console_system.h"
+
 
 #define ABS(x) (x < 0)?-x:x
 #define SGN(x) (x < 0)?-1:1
@@ -80,7 +83,6 @@ void draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t colo
 	     error_term -= ydiff;
           } 
         }
-        
     }else{
     //xdiff = ydiff
        for(uint16_t i=0;i < xdiff;i++){
@@ -135,6 +137,58 @@ void draw_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color) {
     draw_hline(x, y+w, y, color);
 }
 
+void draw_circle(int8_t x0, int8_t y0, int8_t r, uint16_t color) {
+    int8_t f = 1 - r;
+    int8_t ddF_x = 1;
+    int8_t ddF_y = -2 * r;
+    int8_t x = 0;
+    int8_t y = r;
+
+    screen_putpixel(x0, y0 + r, color);
+    screen_putpixel(x0, y0 - r, color);
+    screen_putpixel(x0 + r, y0, color);
+    screen_putpixel(x0 - r, y0, color);
+
+    while (x < y) {
+        if (f >= 0) {
+
+            y--;
+            ddF_y += 2;
+            f += ddF_y;
+        }
+        x++;
+        ddF_x += 2;
+        f += ddF_x;
+
+        screen_putpixel(x0 + x, y0 + y, color);
+        screen_putpixel(x0 - x, y0 + y, color);
+        screen_putpixel(x0 + x, y0 - y, color);
+        screen_putpixel(x0 - x, y0 - y, color);
+        screen_putpixel(x0 + y, y0 + x, color);
+        screen_putpixel(x0 - y, y0 + x, color);
+        screen_putpixel(x0 + y, y0 - x, color);
+        screen_putpixel(x0 - y, y0 - x, color);
+
+    }
+}
+
+void run_demo() {
+    coord_t vertices[3];
+
+    //Triangle
+    vertices[0].x = 100, vertices[0].y = 10;
+    vertices[1].x = 30,  vertices[1].y = 50;
+    vertices[2].x = 100, vertices[2].y = 100;
+
+    draw_polygon(3, vertices, Color565(255,0,0));
+    draw_hline(50, 10, 60, Color565(0,255,0));
+    draw_vline(50, 10, 60, Color565(0,255,255));
+    //draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(255,255,0));
+    //draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(255,0,255));
+    draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(0,255,255));
+    draw_circle(50, 50, 30, Color565(0, 255, 0));
+}
+
 int main(){
     uint16_t mcp_data = 0;
 
@@ -155,20 +209,9 @@ int main(){
     st7735_tearing_off(GPIOA, SPI1);
 
     //draw_line(0, 0, 100, 100, Color565(255,0,0));
+    //
+    run_demo();
 
-    coord_t vertices[2];
-
-    //Triangle
-    vertices[0].x = 100, vertices[0].y = 10;
-    vertices[1].x = 30,  vertices[1].y = 50;
-    vertices[2].x = 100, vertices[2].y = 100;
-
-    draw_polygon(3, vertices, Color565(255,0,0));
-    draw_hline(50, 10, 60, Color565(0,255,0));
-    draw_vline(50, 10, 60, Color565(0,255,255));
-    //draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(255,255,0));
-    //draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(255,0,255));
-    draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(0,255,255));
 
     while(1){
 
