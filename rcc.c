@@ -2,6 +2,7 @@
 #include "stmf103xxx.h"
 #include "rcc.h"
 
+
 /*
  This function would initialize the registers but not activate the counter
  Counter would be started by the delay function

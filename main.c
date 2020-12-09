@@ -10,6 +10,8 @@
 #include "keypad.h"
 #include "console_system.h"
 
+#define ABS(x) (x < 0)?-x:x
+#define SGN(x) (x < 0)?-1:1
 
 void PUT32(uint32_t, uint32_t);
 unsigned int GET32(uint32_t);
@@ -17,6 +19,9 @@ unsigned int GET32(uint32_t);
 uint8_t ledVal = 0;
 volatile uint16_t keypadkeys = 0xffff;
 
+typedef struct coord_t {
+    uint16_t x, y;
+} coord_t;
 
 void exti3_irq_handler(){
     //keypadkeys = keypad_read();
@@ -36,22 +41,134 @@ void exti9_5_irq_handler(){
     EXTI->pr = (1 << 5); //Clearing the pending flag
 }
 
+void draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
+    int xdiff = x2 - x1;
+    int ydiff = y2 - y1;
+    uint16_t error_term = 0;
+    int x_inc = 1, y_inc = 1;
+
+    if(ydiff < 0){
+        ydiff = ABS(ydiff);
+        y_inc = -1;
+    }
+
+    if(xdiff < 0){
+        xdiff = ABS(xdiff);
+        x_inc = -1;
+    }
+
+    //y  = mx
+    if(xdiff > ydiff){
+       for(uint16_t i=0;i < xdiff;i++){
+          screen_putpixel(SCREEN_WIDTH - x1, y1, color);
+	  x1 += x_inc;
+          error_term += ydiff;
+
+          if(error_term > xdiff){
+	     y1 += y_inc;
+	     error_term -= xdiff;
+          } 
+        }
+    }else if (xdiff < ydiff){
+       for(uint16_t i=0;i < ydiff;i++){
+          screen_putpixel(SCREEN_WIDTH - x1, y1, color);
+	  y1 += y_inc;
+          error_term += xdiff;
+
+          if(error_term > ydiff){
+	     x1 += x_inc;
+	     error_term -= ydiff;
+          } 
+        }
+        
+    }else{
+    //xdiff = ydiff
+       for(uint16_t i=0;i < xdiff;i++){
+          screen_putpixel(SCREEN_WIDTH - x1, y1, color);
+	  x1 += x_inc;
+	  y1 += y_inc;
+        }
+    }
+}
+
+void draw_polygon(uint16_t count, coord_t *vertices, uint16_t color) { 
+    for(int i=0;i<count-1;i++){
+        draw_line((vertices + i)->x, (vertices + i)->y, (vertices + i + 1)->x, (vertices + i + 1)->y, color);
+    }
+
+    //draw the last connecting line
+    draw_line(vertices->x, vertices->y, (vertices + (count-1))->x, (vertices + (count-1))->y, color);
+}
+
+void draw_vline(uint16_t x1, uint16_t x2, uint16_t y, uint16_t color) {
+    int xdiff = x2 - x1;
+    int x_inc = 1;
+
+    if(xdiff < 0){
+        xdiff = ABS(xdiff);
+        x_inc = -1;
+    }
+    for(uint16_t i=0;i < xdiff;i++){
+       screen_putpixel(SCREEN_WIDTH - x1, y, color);
+       x1 += x_inc;
+    }
+}
+
+void draw_hline(uint16_t x, uint16_t y1, uint16_t y2,  uint16_t color) {
+    int ydiff = y2 - y1;
+    int y_inc = 1;
+
+    if(ydiff < 0){
+        ydiff = ABS(ydiff);
+        y_inc = -1;
+    }
+    for(uint16_t i=0;i < ydiff;i++){
+       screen_putpixel(SCREEN_WIDTH - x, y1, color);
+       y1 += y_inc;
+    }
+}
+
+void draw_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color) {
+    draw_vline(x, x+h, y, color);
+    draw_hline(x+h, y, y+w, color);
+    draw_vline(x+h, x, y+w, color);
+    draw_hline(x, y+w, y, color);
+}
 
 int main(){
     uint16_t mcp_data = 0;
 
     system_init();
 
+    rand_seed(0xABC);
+
+
     //Turn off led
     //gpio_out(gpio_c, 13, 0);
     ledVal = 0;
 
-    screen_fill(Color565(0,0,255));
+    screen_fill(Color565(0,0,0));
 
     int x_vel = 0, y_vel = 0;
     uint8_t x_pos = 0, y_pos = 0, x_prev = 0, y_prev = 0;
     
     st7735_tearing_off(GPIOA, SPI1);
+
+    //draw_line(0, 0, 100, 100, Color565(255,0,0));
+
+    coord_t vertices[2];
+
+    //Triangle
+    vertices[0].x = 100, vertices[0].y = 10;
+    vertices[1].x = 30,  vertices[1].y = 50;
+    vertices[2].x = 100, vertices[2].y = 100;
+
+    draw_polygon(3, vertices, Color565(255,0,0));
+    draw_hline(50, 10, 60, Color565(0,255,0));
+    draw_vline(50, 10, 60, Color565(0,255,255));
+    //draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(255,255,0));
+    //draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(255,0,255));
+    draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(0,255,255));
 
     while(1){
 

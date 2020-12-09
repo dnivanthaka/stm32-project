@@ -78,6 +78,29 @@ typedef struct systick_t {
     volatile uint32_t calib;
 } systick_t;
 
+static uint16_t g_seed;
+
+static inline void rand_seed(uint16_t s) {
+    g_seed = s;
+}
+
+static inline uint16_t rand() {
+    //Reference https://en.wikipedia.org/wiki/Linear-feedback_shift_register
+    uint16_t lfsr = g_seed;
+    uint16_t bit;                    /* Must be 16-bit to allow bit<<15 later in the code */
+    uint16_t period = 0;
+
+    do
+    {   /* taps: 16 14 13 11; feedback polynomial: x^16 + x^14 + x^13 + x^11 + 1 */
+        bit = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5)) /* & 1u */;
+        lfsr = (lfsr >> 1) | (bit << 15);
+        ++period;
+    }
+    while (lfsr != g_seed);
+
+    return period;
+}
+
 void rcc_init(rcc_t *rcc);
 void systick_init(systick_t *syt);
 void delay_ms(systick_t *syt, uint32_t count);
