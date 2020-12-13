@@ -3,12 +3,12 @@
 
 #include "types.h"
 #include "interrupts.h"
+#include "timer.h"
 #include "rcc.h"
 #include "gpio.h"
 #include "spi.h"
 #include "i2c.h"
 #include "usart.h"
-#include "timer.h"
 
 #define GPIOABASE   0x40010800
 #define GPIOBBASE   0x40010C00
@@ -60,5 +60,6 @@
 
 #define TIM1 ((timer_t *) TIM1BASE)
 #define TIM2 ((timer_t *) TIM2BASE)
+#define TIM3 ((timer_t *) TIM3BASE)
 
 #endif

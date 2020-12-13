@@ -2,6 +2,7 @@
 
 #include "types.h"
 #include "stmf103xxx.h"
+#include "timer.h"
 #include "rcc.h"
 #include "gpio.h"
 #include "usart.h"
@@ -11,12 +12,7 @@
 #include "interrupts.h"
 #include "keypad.h"
 #include "console_system.h"
-#include "timer.h"
 #include "sound.h"
-
-
-#define ABS(x) (x < 0)?-x:x
-#define SGN(x) (x < 0)?-1:1
 
 void PUT32(uint32_t, uint32_t);
 unsigned int GET32(uint32_t);
@@ -65,32 +61,32 @@ void draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t colo
     //y  = mx
     if(xdiff > ydiff){
        for(uint16_t i=0;i < xdiff;i++){
-          screen_putpixel(SCREEN_WIDTH - x1, y1, color);
-	  x1 += x_inc;
+          screen_putpixel(x1, y1, color);
+	      x1 += x_inc;
           error_term += ydiff;
 
           if(error_term > xdiff){
-	     y1 += y_inc;
-	     error_term -= xdiff;
+	        y1 += y_inc;
+	        error_term -= xdiff;
           } 
         }
     }else if (xdiff < ydiff){
        for(uint16_t i=0;i < ydiff;i++){
-          screen_putpixel(SCREEN_WIDTH - x1, y1, color);
+          screen_putpixel(x1, y1, color);
 	  y1 += y_inc;
           error_term += xdiff;
 
           if(error_term > ydiff){
-	     x1 += x_inc;
-	     error_term -= ydiff;
+	        x1 += x_inc;
+	        error_term -= ydiff;
           } 
         }
     }else{
     //xdiff = ydiff
        for(uint16_t i=0;i < xdiff;i++){
-          screen_putpixel(SCREEN_WIDTH - x1, y1, color);
-	  x1 += x_inc;
-	  y1 += y_inc;
+          screen_putpixel(x1, y1, color);
+	      x1 += x_inc;
+	      y1 += y_inc;
         }
     }
 }
@@ -113,7 +109,7 @@ void draw_vline(uint16_t x1, uint16_t x2, uint16_t y, uint16_t color) {
         x_inc = -1;
     }
     for(uint16_t i=0;i < xdiff;i++){
-       screen_putpixel(SCREEN_WIDTH - x1, y, color);
+       screen_putpixel(x1, y, color);
        x1 += x_inc;
     }
 }
@@ -127,7 +123,7 @@ void draw_hline(uint16_t x, uint16_t y1, uint16_t y2,  uint16_t color) {
         y_inc = -1;
     }
     for(uint16_t i=0;i < ydiff;i++){
-       screen_putpixel(SCREEN_WIDTH - x, y1, color);
+       screen_putpixel(x, y1, color);
        y1 += y_inc;
     }
 }
@@ -205,7 +201,7 @@ void run_demo() {
 
 void beep() {
     sound_on();
-    _delay_ms(200);
+    delay_ms(1, 200);
     sound_off();
 }
 
@@ -232,7 +228,6 @@ int main(){
 
     rand_seed(0xABC);
 
-
     //Turn off led
     //gpio_out(gpio_c, 13, 0);
     ledVal = 0;
@@ -242,14 +237,13 @@ int main(){
     int x_vel = 0, y_vel = 0;
     uint8_t x_pos = 0, y_pos = 0, x_prev = 0, y_prev = 0;
     
-    st7735_tearing_off(GPIOA, SPI1);
-
     //draw_line(0, 0, 100, 100, Color565(255,0,0));
     //
     sound_init();
     beep();
     run_demo();
 
+    screen_fill_rect(x_pos, y_pos, 8, 8, Color565(0,255,0));
 
     while(1){
 
@@ -266,19 +260,19 @@ int main(){
 	    //NB display is horizontal
 	    //up	
 	    if(KEYPAD_UP(inp)){
-	     x_vel = 1;
+	     y_vel = -1;
 	    }
 	    //down	
 	    if(KEYPAD_DOWN(inp)){
-	     x_vel = -1;
+	     y_vel = 1;
 	    }
 	    //left
 	    if(KEYPAD_LEFT(inp)){
-	     y_vel = -1;
+	     x_vel = -1;
 	    }
 	    //right
 	    if(KEYPAD_RIGHT(inp)){
-	     y_vel = 1;
+	     x_vel = 1;
 	    }
 	}else{
 	    x_vel = 0;
@@ -325,7 +319,7 @@ int main(){
 
 	//reaches here whenever a button is pressed
 	beep();
-    _delay_ms(10);
+    delay_ms(1, 10);
 
     }
  return 0;

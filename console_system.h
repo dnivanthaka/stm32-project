@@ -11,9 +11,11 @@
 #include "i2c.h"
 #include "interrupts.h"
 #include "keypad.h"
+#include "timer.h"
 
 //delay routines
-#define _delay_ms(y) delay_ms(SYSTICK, y)
+#define delay_ms(x, y) _delay_ms(TIM3, y)
+#define delay_us(y) _delay_us(TIM3, y)
 
 //screen routines
 
@@ -123,7 +125,10 @@ inline void system_init() {
     keypad_init(I2C1, RCC);
 
     screen_init();
+    st7735_set_rotation(0xA8, GPIOA, SPI1);            //MY=1, MX=0, MV=1, RGB=1 (for backtab RGB=0)
     screen_fill(Color565(0, 0, 0));
+
+    st7735_tearing_off(GPIOA, SPI1);
 }
 
 #endif

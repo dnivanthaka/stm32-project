@@ -1,11 +1,18 @@
 #ifndef ST7735_H
 #define ST7735_H
 
-#define INITR_GREENTAB 0x0
-#define INITR_REDTAB   0x1
+#define ST7735_ROTATION 1
 
+#if ST7735_ROTATION 
+#define ST7735_TFTWIDTH  160 
+#define ST7735_TFTHEIGHT 128
+#else
 #define ST7735_TFTWIDTH  128
 #define ST7735_TFTHEIGHT 160
+#endif
+
+#define INITR_GREENTAB 0x0
+#define INITR_REDTAB   0x1
 
 #define ST7735_NOP     0x00
 #define ST7735_SWRESET 0x01
@@ -68,8 +75,10 @@ void st7735_streampixel(uint16_t color, spi_t *spi);
 void st7735_draw_pixel(int16_t x, int16_t y, uint16_t color, gpio_t *gpio, spi_t *spi);
 void st7735_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h,uint16_t color, gpio_t *gpio, spi_t *spi);
 void st7735_fill_screen(uint16_t color, gpio_t *gpio, spi_t *spi);
+void st7735_tearing_on(gpio_t *gpio, spi_t *spi);
 void st7735_tearing_off(gpio_t *gpio, spi_t *spi);
 void st7735_test(gpio_t *gpio, spi_t *spi, systick_t *tick);
+void st7735_set_rotation(uint8_t rotation, gpio_t *gpio, spi_t *spi);
 
 
 #endif // ST7735_H_INCLUDED

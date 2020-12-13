@@ -1,5 +1,6 @@
 #include "types.h"
 #include "stmf103xxx.h"
+#include "timer.h"
 #include "rcc.h"
 
 
@@ -23,7 +24,7 @@ void rcc_init(rcc_t *rcc){
  rcc_setup_cpu(rcc, PLL_9, PPRE2_8);
 }
 
-void delay_ms(systick_t *syt, uint32_t val){
+void delay_ms_old(systick_t *syt, uint32_t val){
  //syt->load = 0xffff - 1;
  syt->load = 0xfff - 1;
  syt->val = 0;
@@ -36,6 +37,41 @@ void delay_ms(systick_t *syt, uint32_t val){
 
  //Stop the counter
  syt->ctrl &= ~SYT_ENABLE;
+}
+
+/**
+ *  
+ */
+void _delay_us(timer_t *tim, uint32_t delay) {
+    if(tim == (struct timer_t *)TIM3BASE){
+        RCC->apb1enr |= 1 << 1; 
+    } 
+
+    tim->psc = 0;
+    tim->arr = 71;
+    tim->sr = 0;
+    tim->cr1 = 1;
+    while(delay--){
+        while(! (tim->sr & 1));
+    }
+
+    tim->cr1 = 0; //stop counter
+}
+
+void _delay_ms(timer_t *tim, uint32_t delay) {
+    if(tim == (struct timer_t *)TIM3BASE){
+        RCC->apb1enr |= 1 << 1; 
+    } 
+
+    tim->psc = 7200 - 1;   //72Mhz / 7200 => 10Khz = 1/100 = 0.1ms
+    tim->arr = 10; //0.01ms * 100 = 1ms
+    tim->sr = 0;
+    tim->cr1 = 1;
+    while(delay--){
+        while(! (tim->sr & 1));
+    }
+
+    tim->cr1 = 0; //stop counter
 }
 
 void rcc_setup_cpu(rcc_t *rcc, uint32_t pll_clk, uint32_t apb_clk){

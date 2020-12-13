@@ -101,9 +101,13 @@ static inline uint16_t rand() {
     return period;
 }
 
+#include "timer.h"
+
 void rcc_init(rcc_t *rcc);
 void systick_init(systick_t *syt);
-void delay_ms(systick_t *syt, uint32_t count);
+//void delay_ms(systick_t *syt, uint32_t count);
+void _delay_ms(timer_t *tim, uint32_t count);
+void _delay_us(timer_t *tim, uint32_t count);
 void rcc_setup_cpu(rcc_t *rcc, uint32_t pll_clk, uint32_t apb_clk);
 
 #endif

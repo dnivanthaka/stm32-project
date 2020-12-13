@@ -1,6 +1,7 @@
 #include "types.h"
 #include "stmf103xxx.h"
 #include "rcc.h"
+#include "timer.h"
 #include "gpio.h"
 
 void gpio_init(gpio_t *gpio, rcc_t *rcc, uint8_t pin, uint8_t mode){

@@ -1,11 +1,17 @@
 #include "types.h"
+#include "console_system.h"
 #include "rcc.h"
 #include "gpio.h"
 #include "spi.h"
 #include "st7735.h"
 
+#if ST7735_ROTATION
+#define ST7735_COL_OFFSET 1
+#define ST7735_ROW_OFFSET 2
+#else
 #define ST7735_COL_OFFSET 2
 #define ST7735_ROW_OFFSET 1
+#endif
 #define ST7735_RES 2 
 #define ST7735_DC  4
 #define ST7735_CE  3
@@ -345,5 +351,19 @@ void st7735_fill_screen(uint16_t color, gpio_t *gpio, spi_t *spi) {
 void st7735_tearing_off(gpio_t *gpio, spi_t *spi){
     gpio_out(gpio, ST7735_CE, 0);
     st7735_command(ST7735_TEOFF, gpio, spi);
+    gpio_out(gpio, ST7735_CE, 1);
+}
+
+void st7735_tearing_on(gpio_t *gpio, spi_t *spi){
+    gpio_out(gpio, ST7735_CE, 0);
+    st7735_command(ST7735_TEON, gpio, spi);
+    gpio_out(gpio, ST7735_CE, 1);
+}
+
+void st7735_set_rotation(uint8_t rotation, gpio_t *gpio, spi_t *spi) {
+
+    gpio_out(gpio, ST7735_CE, 0);
+    st7735_command(ST7735_MADCTL, gpio, spi);
+    st7735_data(rotation, gpio, spi);
     gpio_out(gpio, ST7735_CE, 1);
 }
