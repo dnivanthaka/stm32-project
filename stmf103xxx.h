@@ -8,6 +8,7 @@
 #include "spi.h"
 #include "i2c.h"
 #include "usart.h"
+#include "timer.h"
 
 #define GPIOABASE   0x40010800
 #define GPIOBBASE   0x40010C00
@@ -32,6 +33,12 @@
 #define USART1BASE  0x40013800
 #define USART2BASE  0x40004400
 
+#define TIM1BASE    0x40012C00
+#define TIM2BASE    0x40000000
+#define TIM3BASE    0x40000400
+#define TIM4BASE    0x40000800
+#define TIM5BASE    0x40000800
+
 #define RCC     ((rcc_t *) RCCBASE)
 #define SYSTICK ((systick_t *) SYSTICKBASE)
 
@@ -50,5 +57,8 @@
 
 #define USART1 ((usart_t *) USART1BASE)
 #define USART2 ((usart_t *) USART2BASE)
+
+#define TIM1 ((timer_t *) TIM1BASE)
+#define TIM2 ((timer_t *) TIM2BASE)
 
 #endif

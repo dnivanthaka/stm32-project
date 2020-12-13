@@ -11,6 +11,8 @@
 #include "interrupts.h"
 #include "keypad.h"
 #include "console_system.h"
+#include "timer.h"
+#include "sound.h"
 
 
 #define ABS(x) (x < 0)?-x:x
@@ -137,6 +139,18 @@ void draw_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color) {
     draw_hline(x, y+w, y, color);
 }
 
+void draw_triangle(coord_t *vertices, uint16_t color) {
+    draw_polygon(3, vertices, color);
+}
+
+void draw_filled_triangle(coord_t *vertices, uint16_t color) {
+    draw_polygon(3, vertices, color);
+
+    /*for(){
+    
+    }*/
+}
+
 void draw_circle(int8_t x0, int8_t y0, int8_t r, uint16_t color) {
     int8_t f = 1 - r;
     int8_t ddF_x = 1;
@@ -189,6 +203,28 @@ void run_demo() {
     draw_circle(50, 50, 30, Color565(0, 255, 0));
 }
 
+void beep() {
+    sound_on();
+    _delay_ms(200);
+    sound_off();
+}
+
+void test_timers() {
+   //enable TIM2 clock
+   RCC->apb2enr |= 0xFC;
+   RCC->apb1enr |= (1 << 0);
+
+   TIM2->ccer = 1 << 0; //CC1P = 0, CC1E = 1
+   TIM2->ccmr[0] = 0x0068; //PWM1, OC1PE = 1
+   TIM2->cr1 = 0x80;
+
+   TIM2->psc = 720 - 1; //prescalar 72
+   TIM2->arr = 1500 - 1; //ARR = 999
+   TIM2->ccr[0] = 1000; //duty cycle (300 / 1000) * 100
+   TIM2->egr = 1; // UG = 1 generate update
+   TIM2->cr1 |= 0x01; //timer enable
+}
+
 int main(){
     uint16_t mcp_data = 0;
 
@@ -210,6 +246,8 @@ int main(){
 
     //draw_line(0, 0, 100, 100, Color565(255,0,0));
     //
+    sound_init();
+    beep();
     run_demo();
 
 
@@ -283,7 +321,11 @@ int main(){
 
         screen_fill_rect(x_prev, y_prev, 8, 8, Color565(0,0,255));
         screen_fill_rect(x_pos, y_pos, 8, 8, Color565(0,0,0));
-        _delay_ms(50);
+
+
+	//reaches here whenever a button is pressed
+	beep();
+    _delay_ms(10);
 
     }
  return 0;

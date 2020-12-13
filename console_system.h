@@ -62,6 +62,9 @@ inline void system_init() {
     gpio_init(GPIOA, RCC, 4, GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
     //CE
     gpio_init(GPIOA, RCC, 3, GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
+    //sound
+    gpio_init(GPIOA, RCC, 0, GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_ALT_PUSH);
+    //gpio_init(GPIOA, RCC, 0, GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
 
     gpio_init(GPIOB, RCC, 4, GPIO_MODE_INPUT | GPIO_CNF_IN_FLOAT );
 
