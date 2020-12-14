@@ -54,6 +54,7 @@
 #define SYT_COUNTF   (1 << 16)
 #define SYT_SRC      (1 << 2)
 #define SYT_ENABLE   (1)
+#define SYT_INT      (1 << 1)
 
 
 typedef struct rcc_t {
@@ -101,7 +102,6 @@ static inline uint16_t rand() {
     return period;
 }
 
-#include "timer.h"
 
 void rcc_init(rcc_t *rcc);
 void systick_init(systick_t *syt);
@@ -109,5 +109,6 @@ void systick_init(systick_t *syt);
 void _delay_ms(timer_t *tim, uint32_t count);
 void _delay_us(timer_t *tim, uint32_t count);
 void rcc_setup_cpu(rcc_t *rcc, uint32_t pll_clk, uint32_t apb_clk);
+void systick_interrupt_start(systick_t *syt);
 
 #endif

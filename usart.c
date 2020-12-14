@@ -1,4 +1,5 @@
 #include "types.h"
+#include "timer.h"
 #include "rcc.h"
 #include "gpio.h"
 #include "usart.h"

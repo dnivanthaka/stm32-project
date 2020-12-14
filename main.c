@@ -14,11 +14,14 @@
 #include "console_system.h"
 #include "sound.h"
 
+#define FPSCOUNT 1000/30 //(30fps) in ms
+
 void PUT32(uint32_t, uint32_t);
 unsigned int GET32(uint32_t);
 
 uint8_t ledVal = 0;
 volatile uint16_t keypadkeys = 0xffff;
+static volatile uint32_t systick_counter = 0;
 
 typedef struct coord_t {
     uint16_t x, y;
@@ -40,6 +43,10 @@ void exti9_5_irq_handler(){
     keypadkeys = keypad_read();
 
     EXTI->pr = (1 << 5); //Clearing the pending flag
+}
+
+void systick_handler() {
+    systick_counter++;
 }
 
 void draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
@@ -73,7 +80,7 @@ void draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t colo
     }else if (xdiff < ydiff){
        for(uint16_t i=0;i < ydiff;i++){
           screen_putpixel(x1, y1, color);
-	  y1 += y_inc;
+	      y1 += y_inc;
           error_term += xdiff;
 
           if(error_term > ydiff){
@@ -223,6 +230,7 @@ void test_timers() {
 
 int main(){
     uint16_t mcp_data = 0;
+    uint16_t start_ticks = 0;
 
     system_init();
 
@@ -254,7 +262,11 @@ int main(){
 	//uint8_t inp = (keypad_read() & 0x00ff);
 	//uint8_t inp = (keypadkeys & 0x00ff);
 	uint8_t inp = keypadkeys & 0x00ff;
+
 	//uint8_t inp = gpio_in(gpio_b, 5);
+	x_vel = 0;
+	y_vel = 0;
+
 	inp = ~inp;
         if(inp){
 	    //NB display is horizontal
@@ -275,10 +287,11 @@ int main(){
 	     x_vel = 1;
 	    }
 	}else{
-	    x_vel = 0;
-	    y_vel = 0;
 	    continue;
 	}
+
+    start_ticks = systick_counter;
+    //screen_fill_rect(x_pos, y_pos, 8, 8, Color565(0,0,0));
 
         x_prev = x_pos;
         y_prev = y_pos;
@@ -313,13 +326,16 @@ int main(){
         x_pos += x_vel;
         y_pos += y_vel;
 
-        screen_fill_rect(x_prev, y_prev, 8, 8, Color565(0,0,255));
-        screen_fill_rect(x_pos, y_pos, 8, 8, Color565(0,0,0));
+        screen_fill_rect(x_prev, y_prev, 8, 8, Color565(0,0,0));
+        screen_fill_rect(x_pos, y_pos, 8, 8, Color565(0,0,255));
 
+    while((systick_counter - start_ticks) < FPSCOUNT){
+
+    }
 
 	//reaches here whenever a button is pressed
-	beep();
-    delay_ms(1, 10);
+	//beep();
+    //delay_ms(1, 10);
 
     }
  return 0;

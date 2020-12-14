@@ -10,6 +10,9 @@
 #include "i2c.h"
 #include "usart.h"
 
+
+#define SYSTEM_CORE_CLOCK 72000000
+
 #define GPIOABASE   0x40010800
 #define GPIOBBASE   0x40010C00
 #define GPIOCBASE   0x40011000

@@ -19,7 +19,7 @@
 .word hang       /*Debug - reserved*/
 .word hang       /*Reserved*/
 .word hang       /*Pend SV*/
-.word hang       /*Systick*/
+.word systick_handler       /*Systick*/
 
 .word hang       /*Watchdog window*/
 .word hang       /*PVD*/

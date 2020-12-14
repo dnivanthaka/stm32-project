@@ -14,10 +14,17 @@ void systick_init(systick_t *syt){
  syt->ctrl &= ~SYT_COUNTF;
  syt->ctrl &= ~SYT_SRC;
 
- //syt->calib = 0x0002328;        //9Mhz
- syt->calib = 0x0011940;        //72Mhz
+ syt->calib = 0x0002328;        //9Mhz
 
  syt->load  = 0;
+}
+
+void systick_interrupt_start(systick_t *syt) {
+ syt->load = ((SYSTEM_CORE_CLOCK / 8) / 1000);  //every millisecond
+ syt->val = 0;
+ syt->ctrl &= ~SYT_COUNTF;
+ syt->ctrl |= SYT_INT;
+ syt->ctrl |= SYT_ENABLE;
 }
 
 void rcc_init(rcc_t *rcc){
@@ -64,7 +71,7 @@ void _delay_ms(timer_t *tim, uint32_t delay) {
     } 
 
     tim->psc = 7200 - 1;   //72Mhz / 7200 => 10Khz = 1/100 = 0.1ms
-    tim->arr = 10; //0.01ms * 100 = 1ms
+    tim->arr = 10 - 1; //0.1ms * 10 = 1ms
     tim->sr = 0;
     tim->cr1 = 1;
     while(delay--){

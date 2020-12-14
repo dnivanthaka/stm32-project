@@ -129,6 +129,9 @@ inline void system_init() {
     screen_fill(Color565(0, 0, 0));
 
     st7735_tearing_off(GPIOA, SPI1);
+
+    //we start interrupts
+    systick_interrupt_start(SYSTICK);
 }
 
 #endif
