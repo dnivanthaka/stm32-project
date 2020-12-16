@@ -3,6 +3,12 @@
 #include "timer.h"
 #include "rcc.h"
 
+static volatile uint32_t systick_counter = 0;
+
+//Interrupt handler
+void systick_handler() {
+    systick_counter++;
+}
 
 /*
  This function would initialize the registers but not activate the counter
@@ -25,6 +31,14 @@ void systick_interrupt_start(systick_t *syt) {
  syt->ctrl &= ~SYT_COUNTF;
  syt->ctrl |= SYT_INT;
  syt->ctrl |= SYT_ENABLE;
+}
+
+void systick_counter_set(uint32_t val) {
+    systick_counter = val;
+}
+
+uint32_t systick_counter_get() {
+    return systick_counter;
 }
 
 void rcc_init(rcc_t *rcc){

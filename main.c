@@ -1,5 +1,3 @@
-#include <math.h>
-
 #include "types.h"
 #include "stmf103xxx.h"
 #include "timer.h"
@@ -21,7 +19,6 @@ unsigned int GET32(uint32_t);
 
 uint8_t ledVal = 0;
 volatile uint16_t keypadkeys = 0xffff;
-static volatile uint32_t systick_counter = 0;
 
 typedef struct coord_t {
     uint16_t x, y;
@@ -43,10 +40,6 @@ void exti9_5_irq_handler(){
     keypadkeys = keypad_read();
 
     EXTI->pr = (1 << 5); //Clearing the pending flag
-}
-
-void systick_handler() {
-    systick_counter++;
 }
 
 void draw_line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color) {
@@ -208,7 +201,7 @@ void run_demo() {
 
 void beep() {
     sound_on();
-    delay_ms(1, 200);
+    //sound_ticks = systick_counter - sound_ticks;
     sound_off();
 }
 
@@ -230,7 +223,7 @@ void test_timers() {
 
 int main(){
     uint16_t mcp_data = 0;
-    uint16_t start_ticks = 0;
+    uint32_t start_ticks = 0;
 
     system_init();
 
@@ -244,24 +237,29 @@ int main(){
 
     int x_vel = 0, y_vel = 0;
     uint8_t x_pos = 0, y_pos = 0, x_prev = 0, y_prev = 0;
+	uint8_t inp;
     
     //draw_line(0, 0, 100, 100, Color565(255,0,0));
     //
     sound_init();
-    beep();
+    //beep();
     run_demo();
 
     screen_fill_rect(x_pos, y_pos, 8, 8, Color565(0,255,0));
 
+    soundq_push(1, 100);
+
     while(1){
 
+    soundq_process();
 	//if(keypadkeys == 0xffff){
 	    //continue;
 	//}
 	
-	//uint8_t inp = (keypad_read() & 0x00ff);
+	uint8_t inp = (keypad_read() & 0x00ff);
 	//uint8_t inp = (keypadkeys & 0x00ff);
-	uint8_t inp = keypadkeys & 0x00ff;
+    //TODO need to solve the sticky key issue
+	//inp = keypadkeys & 0x00ff;
 
 	//uint8_t inp = gpio_in(gpio_b, 5);
 	x_vel = 0;
@@ -269,28 +267,29 @@ int main(){
 
 	inp = ~inp;
         if(inp){
+        soundq_push(1, 100);
 	    //NB display is horizontal
 	    //up	
 	    if(KEYPAD_UP(inp)){
-	     y_vel = -1;
+	     y_vel = -8;
 	    }
 	    //down	
 	    if(KEYPAD_DOWN(inp)){
-	     y_vel = 1;
+	     y_vel = 8;
 	    }
 	    //left
 	    if(KEYPAD_LEFT(inp)){
-	     x_vel = -1;
+	     x_vel = -8;
 	    }
 	    //right
 	    if(KEYPAD_RIGHT(inp)){
-	     x_vel = 1;
+	     x_vel = 8;
 	    }
 	}else{
 	    continue;
 	}
 
-    start_ticks = systick_counter;
+    start_ticks = systick_counter_get();
     //screen_fill_rect(x_pos, y_pos, 8, 8, Color565(0,0,0));
 
         x_prev = x_pos;
@@ -329,7 +328,8 @@ int main(){
         screen_fill_rect(x_prev, y_prev, 8, 8, Color565(0,0,0));
         screen_fill_rect(x_pos, y_pos, 8, 8, Color565(0,0,255));
 
-    while((systick_counter - start_ticks) < FPSCOUNT){
+
+    while(ABS(systick_counter_get() - start_ticks) < FPSCOUNT){
 
     }
 
