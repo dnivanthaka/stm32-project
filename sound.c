@@ -44,7 +44,7 @@ void soundq_process() {
             sq[start].duration = (temp - ABS(systick_counter_get() - sound_ticks) <= 0) ? 0 : 
                 sq[start].duration - ABS(systick_counter_get() - sound_ticks);
             if(sq[start].duration == 0){
-                if(start == (SOUNDQ_SIZE - 1) || start == (end - 1)){
+                if(start == (SOUNDQ_SIZE - 1) || start == end){
                     //terminating condition
                     soundq_init();
                 }else{

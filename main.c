@@ -193,9 +193,9 @@ void run_demo() {
     draw_polygon(3, vertices, Color565(255,0,0));
     draw_hline(50, 10, 60, Color565(0,255,0));
     draw_vline(50, 10, 60, Color565(0,255,255));
-    //draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(255,255,0));
-    //draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(255,0,255));
-    draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(0,255,255));
+    draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(255,255,0));
+    draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(255,0,255));
+    //draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(0,255,255));
     draw_circle(50, 50, 30, Color565(0, 255, 0));
 }
 
@@ -224,10 +224,11 @@ void test_timers() {
 int main(){
     uint16_t mcp_data = 0;
     uint32_t start_ticks = 0;
+    uint32_t *tmp = (uint32_t *)0x20000100;
 
     system_init();
 
-    rand_seed(0xABC);
+    srand(systick_counter_get() + (*tmp));
 
     //Turn off led
     //gpio_out(gpio_c, 13, 0);
@@ -247,7 +248,7 @@ int main(){
 
     screen_fill_rect(x_pos, y_pos, 8, 8, Color565(0,255,0));
 
-    soundq_push(1, 100);
+    soundq_push(1, 200);
 
     while(1){
 
@@ -267,7 +268,7 @@ int main(){
 
 	inp = ~inp;
         if(inp){
-        soundq_push(1, 100);
+        //soundq_push(1, 50);
 	    //NB display is horizontal
 	    //up	
 	    if(KEYPAD_UP(inp)){

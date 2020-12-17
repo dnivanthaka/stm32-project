@@ -4,6 +4,7 @@
 #include "rcc.h"
 
 static volatile uint32_t systick_counter = 0;
+static uint16_t g_seed;
 
 //Interrupt handler
 void systick_handler() {
@@ -113,3 +114,31 @@ void rcc_setup_cpu(rcc_t *rcc, uint32_t pll_clk, uint32_t apb_clk){
  rcc->cfgr = (rcc->cfgr | 0b10) & ~1 | apb_clk; // ABP = CLK / 8
  while(! (rcc->cfgr & (1 << 3)));
 }
+
+
+void srand(uint16_t s) {
+    g_seed = s;
+}
+
+uint16_t rand() {
+    //Reference https://en.wikipedia.org/wiki/Linear-feedback_shift_register
+    // uint16_t lfsr = g_seed;
+    // uint16_t bit;                    /* Must be 16-bit to allow bit<<15 later in the code */
+    // uint16_t period = 0;
+
+    // do
+    // {   /* taps: 16 14 13 11; feedback polynomial: x^16 + x^14 + x^13 + x^11 + 1 */
+    //     bit = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5)) /* & 1u */;
+    //     lfsr = (lfsr >> 1) | (bit << 15);
+    //     ++period;
+    // }
+    // while (lfsr != g_seed);
+
+    uint16_t lsb = g_seed & 1;
+    g_seed >>= 1;
+    if(lsb) g_seed ^= 0xd400;
+
+    return g_seed;
+}
+
+
