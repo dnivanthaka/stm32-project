@@ -9,8 +9,9 @@
 #include "i2c.h"
 #include "interrupts.h"
 #include "keypad.h"
-#include "console_system.h"
 #include "sound.h"
+#include "console_system.h"
+#include "adc.h"
 
 #define FPSCOUNT 1000/30 //(30fps) in ms
 
@@ -221,14 +222,34 @@ void test_timers() {
    TIM2->cr1 |= 0x01; //timer enable
 }
 
+void init_adc(adc_t *adc) {
+    gpio_init(GPIOA, RCC, 1, GPIO_MODE_INPUT | GPIO_CNF_IN_ANALOG);
+    RCC->apb2enr |= (1 << 9);
+
+    adc->cr2 = 1; //ADON
+    adc->smpr[1] = 1 << 3; //SMP1 = 001, 7.5 clocks
+
+    delay_ms(1, 1);
+}
+
+uint32_t adc_get(adc_t *adc) {
+    adc->sqr[2] = 1;
+    adc->cr2 = 1; //ADON start conversion
+    while((adc->sr & (1 << 1)) == 0);
+
+    return adc->dr;
+}
+
 int main(){
     uint16_t mcp_data = 0;
     uint32_t start_ticks = 0;
     uint32_t *tmp = (uint32_t *)0x20000100;
 
     system_init();
+    adc_t *ADC1 = (adc_t *)ADC1BASE; 
+    init_adc(ADC1);
 
-    srand(systick_counter_get() + (*tmp));
+    srand(systick_counter_get() + (*tmp) + (adc_get(ADC1) & 0x001f));
 
     //Turn off led
     //gpio_out(gpio_c, 13, 0);
@@ -248,9 +269,11 @@ int main(){
 
     screen_fill_rect(x_pos, y_pos, 8, 8, Color565(0,255,0));
 
+
     soundq_push(1, 200);
 
     while(1){
+
 
     soundq_process();
 	//if(keypadkeys == 0xffff){
