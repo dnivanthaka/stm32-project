@@ -191,13 +191,17 @@ void run_demo() {
     vertices[1].x = 30,  vertices[1].y = 50;
     vertices[2].x = 100, vertices[2].y = 100;
 
-    draw_polygon(3, vertices, Color565(255,0,0));
-    draw_hline(50, 10, 60, Color565(0,255,0));
-    draw_vline(50, 10, 60, Color565(0,255,255));
-    draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(255,255,0));
-    draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(255,0,255));
+    //draw_polygon(3, vertices, Color565(255,0,0));
+    //draw_hline(50, 10, 60, Color565(0,255,0));
+    //draw_vline(50, 10, 60, Color565(0,255,255));
+    //draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(255,255,0));
+    //draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(255,0,255));
     //draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(0,255,255));
-    draw_circle(50, 50, 30, Color565(0, 255, 0));
+    //draw_circle(50, 50, 30, Color565(0, 255, 0));
+
+    for(int i=0;i<1000;i++){
+        draw_line(rand() % (SCREEN_WIDTH - 1), rand() % (SCREEN_HEIGHT - 1), rand() % (SCREEN_WIDTH - 1), rand() % (SCREEN_HEIGHT - 1), Color565(rand() % 255, rand() % 255, rand() % 255));
+    }
 }
 
 void beep() {
@@ -222,23 +226,6 @@ void test_timers() {
    TIM2->cr1 |= 0x01; //timer enable
 }
 
-void init_adc(adc_t *adc) {
-    gpio_init(GPIOA, RCC, 1, GPIO_MODE_INPUT | GPIO_CNF_IN_ANALOG);
-    RCC->apb2enr |= (1 << 9);
-
-    adc->cr2 = 1; //ADON
-    adc->smpr[1] = 1 << 3; //SMP1 = 001, 7.5 clocks
-
-    delay_ms(1, 1);
-}
-
-uint32_t adc_get(adc_t *adc) {
-    adc->sqr[2] = 1;
-    adc->cr2 = 1; //ADON start conversion
-    while((adc->sr & (1 << 1)) == 0);
-
-    return adc->dr;
-}
 
 int main(){
     uint16_t mcp_data = 0;
@@ -249,7 +236,7 @@ int main(){
     adc_t *ADC1 = (adc_t *)ADC1BASE; 
     init_adc(ADC1);
 
-    srand(systick_counter_get() + (*tmp) + (adc_get(ADC1) & 0x001f));
+    srand(systick_counter_get() + (*tmp) + (adc_get(ADC1) & 0x001f) + (((adc_get(ADC1) & 0x001f)) << 4) + ((adc_get(ADC1)) << 8));
 
     //Turn off led
     //gpio_out(gpio_c, 13, 0);

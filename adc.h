@@ -1,8 +1,6 @@
 #ifndef ADC_H
 #define ADC_H
 
-#define ADC1BASE 0x40012400
-
 typedef struct adc_t {
     volatile uint32_t sr;
     volatile uint32_t cr1;
@@ -16,5 +14,8 @@ typedef struct adc_t {
     volatile uint32_t jdr[4];
     volatile uint32_t dr;
 } adc_t;
+
+void init_adc(adc_t *adc);
+uint32_t adc_get(adc_t *adc);
 
 #endif

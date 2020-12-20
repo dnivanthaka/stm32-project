@@ -16,7 +16,7 @@
 #define ST7735_DC  4
 #define ST7735_CE  3
 
-void st7735_test(gpio_t *gpio, spi_t *spi, systick_t *tick)
+void st7735_test(gpio_t *gpio, spi_t *spi)
 {
   int x_vel = 1, y_vel = 1;
   uint8_t x_pos, y_pos, x_prev, y_prev;
@@ -28,7 +28,7 @@ void st7735_test(gpio_t *gpio, spi_t *spi, systick_t *tick)
   st7735_fill_rect(0, 0, 42, 160, Color565(255,0,0), gpio, spi);
   st7735_fill_rect(42, 0, 42, 160, Color565(0,255,0), gpio, spi);
   st7735_fill_rect(84, 0, 44, 160, Color565(0,0,255), gpio, spi);
-  delay_ms(tick, 200);
+  delay_ms(200);
 
   x_pos = 0;
   y_pos = 0;
@@ -40,7 +40,7 @@ void st7735_test(gpio_t *gpio, spi_t *spi, systick_t *tick)
   {
         st7735_fill_rect(x_prev, y_prev, 8, 8, Color565(255,255,0), gpio, spi);
         st7735_fill_rect(x_pos, y_pos, 8, 8, Color565(0,0,0), gpio, spi);
-        delay_ms(tick, 50);
+        delay_ms(50);
         //st7735_fill_rect(x_pos, y_pos, 8, 8, Color565(0,0,255));
 
         x_prev = x_pos;
@@ -82,7 +82,7 @@ void st7735_test(gpio_t *gpio, spi_t *spi, systick_t *tick)
 // CE  -> PA3
 // D/C -> PA4
 
-void st7735_hwreset(gpio_t *gpio, systick_t *tick)
+void st7735_hwreset(gpio_t *gpio)
 {
     // Issuing command
     gpio_out(gpio, ST7735_RES, 1);
@@ -90,19 +90,19 @@ void st7735_hwreset(gpio_t *gpio, systick_t *tick)
     gpio_out(gpio, ST7735_CE, 0);
     //ST7735_CE = 0;
 
-    delay_ms(tick, 200);
+    delay_ms(200);
     //__delay_ms(200);
 
     gpio_out(gpio, ST7735_RES, 0);
     //ST7735_RST = 0;
 
-    delay_ms(tick, 200);
+    delay_ms(200);
     //__delay_ms(200);
 
     gpio_out(gpio, ST7735_RES, 1);
     //ST7735_RST = 1;
 
-    delay_ms(tick, 600);
+    delay_ms(600);
     //__delay_ms(200);
 
     // Device deselect
@@ -140,26 +140,26 @@ void st7735_data(uint8_t dta, gpio_t *gpio, spi_t *spi)
     //ST7735_CE = 1;
 }
 
-void st7735_init(gpio_t *gpio, spi_t *spi, systick_t *tick)
+void st7735_init(gpio_t *gpio, spi_t *spi)
 {
     gpio_out(gpio, ST7735_CE, 1);
     gpio_out(gpio, ST7735_DC, 1);
     gpio_out(gpio, ST7735_RES, 1);
 
-    st7735_hwreset(gpio, tick);
+    st7735_hwreset(gpio);
 
     //Select display
     gpio_out(gpio, ST7735_CE, 0);
 
     st7735_command(ST7735_SWRESET, gpio, spi);
-    delay_ms(tick, 150);
+    delay_ms(150);
 
     st7735_command(ST7735_SLPOUT, gpio, spi);
-    delay_ms(tick, 500);
+    delay_ms(500);
 
     st7735_command(ST7735_COLMOD, gpio, spi);
     st7735_data(0x05, gpio, spi);
-    delay_ms(tick, 10);
+    delay_ms(10);
 
     st7735_command(ST7735_FRMCTR1, gpio, spi);
     st7735_data(0x01, gpio, spi);
@@ -273,10 +273,10 @@ void st7735_init(gpio_t *gpio, spi_t *spi, systick_t *tick)
     st7735_data(0x10, gpio, spi);
 
     st7735_command(ST7735_NORON, gpio, spi);
-    delay_ms(tick, 10);
+    delay_ms(10);
 
     st7735_command(ST7735_DISPON, gpio, spi);
-    delay_ms(tick, 500);
+    delay_ms(500);
 
     //deselect display
     gpio_out(gpio, ST7735_CE, 1);

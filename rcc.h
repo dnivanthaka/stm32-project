@@ -91,4 +91,8 @@ uint32_t systick_counter_get();
 void srand(uint16_t seed);
 uint16_t rand();
 
+//delay routines
+#define delay_ms(y) _delay_ms(TIM3, y)
+#define delay_us(y) _delay_us(TIM3, y)
+
 #endif

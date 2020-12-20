@@ -66,10 +66,10 @@
 // Pass 8-bit (each) R,G,B, get back 16-bit packed color
 #define Color565(r,g,b) (uint16_t)((b & 0xF8) << 8) | ((g & 0xFC) << 3) | (r >> 3)
 
-void st7735_hwreset(gpio_t *gpio, systick_t *tick);
+void st7735_hwreset(gpio_t *gpio);
 void st7735_command(uint8_t cmd, gpio_t *gpio, spi_t *spi);
 void st7735_data(uint8_t dta, gpio_t *gpio, spi_t *spi);
-void st7735_init(gpio_t *gpio, spi_t *spi, systick_t *tick);
+void st7735_init(gpio_t *gpio, spi_t *spi);
 void st7735_set_addr_window(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, gpio_t *gpio, spi_t *spi);
 void st7735_streampixel(uint16_t color, spi_t *spi);
 void st7735_draw_pixel(int16_t x, int16_t y, uint16_t color, gpio_t *gpio, spi_t *spi);
@@ -77,7 +77,7 @@ void st7735_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h,uint16_t color,
 void st7735_fill_screen(uint16_t color, gpio_t *gpio, spi_t *spi);
 void st7735_tearing_on(gpio_t *gpio, spi_t *spi);
 void st7735_tearing_off(gpio_t *gpio, spi_t *spi);
-void st7735_test(gpio_t *gpio, spi_t *spi, systick_t *tick);
+void st7735_test(gpio_t *gpio, spi_t *spi);
 void st7735_set_rotation(uint8_t rotation, gpio_t *gpio, spi_t *spi);
 
 

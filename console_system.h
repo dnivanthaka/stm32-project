@@ -13,9 +13,6 @@
 #include "keypad.h"
 #include "timer.h"
 
-//delay routines
-#define delay_ms(x, y) _delay_ms(TIM3, y)
-#define delay_us(y) _delay_us(TIM3, y)
 
 //screen routines
 
@@ -23,11 +20,11 @@
 #define SCREEN_HEIGHT ST7735_TFTHEIGHT
 
 inline void screen_init() {
-    st7735_init(GPIOA, SPI1, SYSTICK);
+    st7735_init(GPIOA, SPI1);
 }
 
 inline void screen_reset() {
-    st7735_hwreset(GPIOA, SYSTICK);
+    st7735_hwreset(GPIOA);
 }
 
 inline void screen_fill(uint16_t color) {
