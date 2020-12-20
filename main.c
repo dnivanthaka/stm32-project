@@ -202,6 +202,14 @@ void run_demo() {
     for(int i=0;i<1000;i++){
         draw_line(rand() % (SCREEN_WIDTH - 1), rand() % (SCREEN_HEIGHT - 1), rand() % (SCREEN_WIDTH - 1), rand() % (SCREEN_HEIGHT - 1), Color565(rand() % 255, rand() % 255, rand() % 255));
     }
+    delay_ms(100);
+    //Clear screen
+    screen_fill(Color565(0,0,0));
+
+    for(int i=0;i<100;i++){
+        draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(rand() % 255, rand() % 255, rand() % 255));
+    }
+
 }
 
 void beep() {
@@ -234,9 +242,11 @@ int main(){
 
     system_init();
     adc_t *ADC1 = (adc_t *)ADC1BASE; 
-    init_adc(ADC1);
+    adc_init(ADC1);
 
-    srand(systick_counter_get() + (*tmp) + (adc_get(ADC1) & 0x001f) + (((adc_get(ADC1) & 0x001f)) << 4) + ((adc_get(ADC1)) << 8));
+    srand(systick_counter_get() + (*tmp) + (adc_get(ADC1) & 0x001f) + (adc_get(ADC1) & 0x001f) + ((adc_get(ADC1)) << 4));
+
+    adc_off(ADC1);
 
     //Turn off led
     //gpio_out(gpio_c, 13, 0);
@@ -254,7 +264,7 @@ int main(){
     //beep();
     run_demo();
 
-    screen_fill_rect(x_pos, y_pos, 8, 8, Color565(0,255,0));
+    screen_fill_rect(x_pos, y_pos, 8, 8, Color565(0,0,255));
 
 
     soundq_push(1, 200);
@@ -278,7 +288,7 @@ int main(){
 
 	inp = ~inp;
         if(inp){
-        //soundq_push(1, 50);
+        soundq_push(1, 50);
 	    //NB display is horizontal
 	    //up	
 	    if(KEYPAD_UP(inp)){

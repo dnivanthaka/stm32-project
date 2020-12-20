@@ -3,7 +3,7 @@
 #include "console_system.h"
 #include "adc.h"
 
-void init_adc(adc_t *adc) {
+void adc_init(adc_t *adc) {
     gpio_init(GPIOA, RCC, 1, GPIO_MODE_INPUT | GPIO_CNF_IN_ANALOG);
     RCC->apb2enr |= (1 << 9);
 
@@ -19,4 +19,8 @@ uint32_t adc_get(adc_t *adc) {
     while((adc->sr & (1 << 1)) == 0);
 
     return adc->dr;
+}
+
+void adc_off(adc_t *adc) {
+    adc->cr2 &= ~(1); //ADON
 }

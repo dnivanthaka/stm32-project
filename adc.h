@@ -15,7 +15,8 @@ typedef struct adc_t {
     volatile uint32_t dr;
 } adc_t;
 
-void init_adc(adc_t *adc);
+void adc_init(adc_t *adc);
 uint32_t adc_get(adc_t *adc);
+void adc_off(adc_t *adc);
 
 #endif
