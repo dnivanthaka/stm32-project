@@ -84,6 +84,8 @@ void st7735_test(gpio_t *gpio, spi_t *spi)
 
 void st7735_hwreset(gpio_t *gpio)
 {
+    _disable_irq();
+
     // Issuing command
     gpio_out(gpio, ST7735_RES, 1);
     //ST7735_RST = 1;
@@ -108,6 +110,7 @@ void st7735_hwreset(gpio_t *gpio)
     // Device deselect
     gpio_out(gpio, ST7735_CE, 1);
     //ST7735_CE = 1;
+    _enable_irq();
 }
 
 void st7735_command(uint8_t cmd, gpio_t *gpio, spi_t *spi)
@@ -142,6 +145,8 @@ void st7735_data(uint8_t dta, gpio_t *gpio, spi_t *spi)
 
 void st7735_init(gpio_t *gpio, spi_t *spi)
 {
+    _disable_irq();
+
     gpio_out(gpio, ST7735_CE, 1);
     gpio_out(gpio, ST7735_DC, 1);
     gpio_out(gpio, ST7735_RES, 1);
@@ -280,6 +285,8 @@ void st7735_init(gpio_t *gpio, spi_t *spi)
 
     //deselect display
     gpio_out(gpio, ST7735_CE, 1);
+
+    _enable_irq();
 }
 
 void st7735_streampixel(uint16_t color, spi_t *spi) {

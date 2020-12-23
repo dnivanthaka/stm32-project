@@ -58,5 +58,6 @@
 
 void keypad_init();
 uint16_t keypad_read();
+uint16_t keypad_read_interrupt();
 
 #endif

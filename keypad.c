@@ -16,6 +16,7 @@
 #define KEYPAD_RCC RCC
 
 void keypad_init() {
+    _disable_irq();
     i2c_init(KEYPAD_I2C, KEYPAD_RCC);
 
     //reset iocon to default values
@@ -44,11 +45,25 @@ void keypad_init() {
 
     mcp23x17_write(KEYPAD_I2C, KEYPAD_ADDR, GPINTENA_0, 0xff);
     mcp23x17_write(KEYPAD_I2C, KEYPAD_ADDR, GPINTENB_0, 0xff);
+    _enable_irq();
 }
 
 uint16_t keypad_read(){
+    _disable_irq();
+
     uint8_t gpioa = mcp23x17_read(KEYPAD_I2C, KEYPAD_ADDR, 0x12);
     uint8_t gpiob = mcp23x17_read(KEYPAD_I2C, KEYPAD_ADDR, 0x13);
 
+    _enable_irq();
+    return ((gpiob << 8) | gpioa);
+}
+
+uint16_t keypad_read_interrupt(){
+    _disable_irq();
+
+    uint8_t gpioa = mcp23x17_read(KEYPAD_I2C, KEYPAD_ADDR, 0x10);
+    uint8_t gpiob = mcp23x17_read(KEYPAD_I2C, KEYPAD_ADDR, 0x11);
+
+    _enable_irq();
     return ((gpiob << 8) | gpioa);
 }

@@ -26,29 +26,23 @@ void spi_init(spi_t *spi, uint8_t mode, uint8_t dir, uint8_t frame_format,
 }
 
 void spi_write(spi_t *spi, uint16_t data){
-    _disable_irq();
     //Clear the overrun flag
     spi->sr &= ~(1 << 6);
     spi->dr = data;
     while(! (spi->sr & SPI_SR_TXE));
     while((spi->sr & (1 << 7))); //BSY flag
-    _enable_irq();
 }
 
 uint8_t spi_read(spi_t *spi){
-    _disable_irq();
     while((spi->sr & (1 << 7))); //BSY flag
     while(! (spi->sr & SPI_SR_RXNE));
-    _enable_irq();
     return spi->dr;
 }
 
 uint8_t spi_transfer(spi_t *spi, uint16_t data){
-    _disable_irq();
     spi->dr = data;
     while(! (spi->sr & SPI_SR_RXNE));
     while((spi->sr & (1 << 7))); //BSY flag
-    _enable_irq();
     return spi->dr;
 }
 

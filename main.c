@@ -32,13 +32,13 @@ void exti3_irq_handler(){
 }
 
 void exti4_irq_handler(){
-    keypadkeys = keypad_read();
+    keypadkeys = keypad_read_interrupt();
 
     EXTI->pr = (1 << 4); //Clearing the pending flag
 }
 
 void exti9_5_irq_handler(){
-    keypadkeys = keypad_read();
+    keypadkeys = keypad_read_interrupt();
 
     EXTI->pr = (1 << 5); //Clearing the pending flag
 }

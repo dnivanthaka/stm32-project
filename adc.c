@@ -4,6 +4,7 @@
 #include "adc.h"
 
 void adc_init(adc_t *adc) {
+    _disable_irq();
     gpio_init(GPIOA, RCC, 1, GPIO_MODE_INPUT | GPIO_CNF_IN_ANALOG);
     RCC->apb2enr |= (1 << 9);
 
@@ -11,6 +12,7 @@ void adc_init(adc_t *adc) {
     adc->smpr[1] = 1 << 3; //SMP1 = 001, 7.5 clocks
 
     delay_ms(1);
+    _enable_irq();
 }
 
 uint32_t adc_get(adc_t *adc) {
