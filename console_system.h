@@ -12,6 +12,7 @@
 #include "interrupts.h"
 #include "keypad.h"
 #include "timer.h"
+#include "ili9341.h"
 
 
 //screen routines
@@ -75,7 +76,8 @@ inline void system_init() {
 
     gpio_init(GPIOA, RCC, 5,  GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_ALT_PUSH);
     //gpio_init(gpio_a, rcc, 5,  GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
-    gpio_init(GPIOA, RCC, 6,  GPIO_MODE_INPUT | GPIO_CNF_IN_PULL);
+    //gpio_init(GPIOA, RCC, 6,  GPIO_MODE_INPUT | GPIO_CNF_IN_PULL);
+    gpio_init(GPIOA, RCC, 6,  GPIO_MODE_INPUT | GPIO_CNF_IN_FLOAT);
     gpio_init(GPIOA, RCC, 7,  GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_ALT_PUSH);
 
     gpio_init(GPIOB, RCC, 6,  GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_ALT_OPEN);              //I2C pins
@@ -121,14 +123,21 @@ inline void system_init() {
     //need to do it after initializing interrupts, would freeze since the mcp23017 intrrupt fires immediately
     keypad_init(I2C1, RCC);
 
-    screen_init();
-    st7735_set_rotation(0xA8, GPIOA, SPI1);            //MY=1, MX=0, MV=1, RGB=1 (for backtab RGB=0)
-    screen_fill(Color565(0, 0, 0));
+    //screen_init();
+    //st7735_set_rotation(0xA8, GPIOA, SPI1);            //MY=1, MX=0, MV=1, RGB=1 (for backtab RGB=0)
+    //screen_fill(Color565(0, 0, 0));
 
-    st7735_tearing_off(GPIOA, SPI1);
+    //st7735_tearing_off(GPIOA, SPI1);
+
+    ili9341_init(SPI1, GPIOA);
+    ili9341_fill_screen(Color565(0, 255, 0), SPI1, GPIOA);
+    ili9341_draw_pixel(0, 0, Color565(255, 0, 0), SPI1, GPIOA);
 
     //we start interrupts
     systick_interrupt_start(SYSTICK);
+
+
+    while(1);
 }
 
 #endif
