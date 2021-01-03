@@ -1,5 +1,6 @@
 #include "types.h"
 #include "stmf103xxx.h"
+#include "spi.h"
 #include "ili9341.h"
 
 // Pin configuration
@@ -11,6 +12,11 @@
 #define ILI9341_CE 3
 #define ILI9341_RES 2
 
+static uint8_t rotation = 0;
+static uint16_t g_ili9341_width = ILI9341_WIDTH;
+static uint16_t g_ili9341_height = ILI9341_HEIGHT;
+
+
 void ili9341_init(spi_t *spi, gpio_t *gpio) {
     gpio_out(gpio, ILI9341_CE, 1);
     gpio_out(gpio, ILI9341_DC, 1);
@@ -18,13 +24,13 @@ void ili9341_init(spi_t *spi, gpio_t *gpio) {
 
     delay_ms(100);
 
-    ili9341_hwreset(spi, gpio);
+    ili9341_hwreset(gpio);
     ili9341_swreset(spi, gpio);
 
-    delay_ms(300);
+    delay_ms(100);
 
     //Select display
-    //gpio_out(gpio, ILI9341_CE, 0);
+    gpio_out(gpio, ILI9341_CE, 0);
 
     ili9341_command(0xEF, spi, gpio); 
     ili9341_data(0x03, spi, gpio);
@@ -134,14 +140,14 @@ void ili9341_init(spi_t *spi, gpio_t *gpio) {
 
     ili9341_command(ILI9341_SLEEPOUT, spi, gpio); 
     ili9341_data(0x80, spi, gpio);
-    delay_ms(250);
+    delay_ms(150);
     
     ili9341_command(ILI9341_DISPON, spi, gpio); 
     ili9341_data(0x80, spi, gpio);
-    delay_ms(250);
+    delay_ms(150);
 
     //deselect display
-    //gpio_out(gpio, ILI9341_CE, 1);
+    gpio_out(gpio, ILI9341_CE, 1);
 }
 
 void ili9341_swreset(spi_t *spi, gpio_t *gpio) {
@@ -153,7 +159,7 @@ void ili9341_swreset(spi_t *spi, gpio_t *gpio) {
 }
 
 void ili9341_set_addr_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, spi_t *spi, gpio_t *gpio) {
-    //gpio_out(gpio, ILI9341_CE, 0);
+    gpio_out(gpio, ILI9341_CE, 0);
 
     ili9341_command(ILI9341_COLSET, spi, gpio); // Column addr set
     ili9341_data(((x0 & 0xff00) >> 8), spi, gpio);
@@ -169,7 +175,7 @@ void ili9341_set_addr_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
 
     ili9341_command(ILI9341_MEMWR, spi, gpio); // write to RAM
 
-    //gpio_out(gpio, ILI9341_CE, 1);
+    gpio_out(gpio, ILI9341_CE, 1);
 }
 
 void ili9341_streampixel(uint16_t color, spi_t *spi) {
@@ -179,45 +185,51 @@ void ili9341_streampixel(uint16_t color, spi_t *spi) {
     spi_write(spi, data2);
 }
 
-void ili9341_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h,uint16_t color, spi_t *spi, gpio_t *gpio) {
-    //gpio_out(gpio, ILI9341_CE, 0);
+void ili9341_streampixel_bytes(uint16_t color, uint16_t count, spi_t *spi){
+    uint8_t data1 = color>>8;
+    uint8_t data2 = color&0xff;
+    for(uint16_t i=0;i<count;i++){
+        spi_write(spi, data1);
+        spi_write(spi, data2);
+    }
+}
 
+void ili9341_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h,uint16_t color, spi_t *spi, gpio_t *gpio) {
     ili9341_set_addr_window(x, y, x+w-1, y+h-1, spi, gpio);
 
     gpio_out(gpio, ILI9341_CE, 0);
     gpio_out(gpio, ILI9341_DC, 1);
 
     for(y=h; y>0; y--) {
-        for(x=w; x>0; x--) {
-            ili9341_streampixel(color, spi);
-        }
+        //for(x=w; x>0; x--) {
+            ili9341_streampixel_bytes(color, w, spi);
+        //}
     }
 
     gpio_out(gpio, ILI9341_CE, 1);
 }
 
 void ili9341_fill_screen(uint16_t color, spi_t *spi, gpio_t *gpio) {
-    ili9341_fill_rect(0, 0, ILI9341_WIDTH, ILI9341_HEIGHT, color, spi, gpio);
+    ili9341_fill_rect(0, 0, g_ili9341_width, g_ili9341_width, color, spi, gpio);
 }
 
 void ili9341_draw_pixel(int16_t x, int16_t y, uint16_t color, spi_t *spi, gpio_t *gpio) {
-
-    //gpio_out(gpio, ILI9341_CE, 0);
     ili9341_set_addr_window(x, y, x+1, y+1, spi, gpio);
+    gpio_out(gpio, ILI9341_CE, 0);
 
-    //gpio_out(gpio, ILI9341_DC, 1);
+    gpio_out(gpio, ILI9341_DC, 1);
     ili9341_streampixel(color, spi);
-    //gpio_out(gpio, ILI9341_CE, 1);
+    gpio_out(gpio, ILI9341_CE, 1);
 }
 
-void ili9341_hwreset(spi_t *spi, gpio_t *gpio) {
+void ili9341_hwreset(gpio_t *gpio) {
     gpio_out(gpio, ILI9341_RES, 1);
     gpio_out(gpio, ILI9341_CE, 0);
 
     delay_ms(100);
 
     gpio_out(gpio, ILI9341_RES, 0);
-    delay_ms(200);
+    delay_ms(100);
     gpio_out(gpio, ILI9341_RES, 1);
     delay_ms(200);
 
@@ -225,18 +237,72 @@ void ili9341_hwreset(spi_t *spi, gpio_t *gpio) {
 }
 
 void ili9341_command(uint8_t cmd, spi_t *spi, gpio_t *gpio) {
-    gpio_out(gpio, ILI9341_CE, 0);
     // Setting command mode -> D = 1, C = 0
     gpio_out(gpio, ILI9341_DC, 0);
     spi_write(spi, cmd);
     gpio_out(gpio, ILI9341_DC, 1);
-    gpio_out(gpio, ILI9341_CE, 1);
 }
 
 void ili9341_data(uint8_t dta, spi_t *spi, gpio_t *gpio) {
-    gpio_out(gpio, ILI9341_CE, 0);
     // Setting command mode -> D = 1, C = 0
     gpio_out(gpio, ILI9341_DC, 1);
     spi_write(spi, dta);
+}
+
+void ili9341_set_rotation(uint8_t m, spi_t *spi, gpio_t *gpio) {
+    rotation = m % 4;
+    gpio_out(gpio, ILI9341_CE, 0);
+
+    ili9341_command(ILI9341_MEMACTRL, spi, gpio); // Column addr set
+    switch(rotation){
+        case 0:
+            ili9341_data(ILI9341_MADCTL_MX | ILI9341_MADCTL_RGB, spi, gpio);
+            g_ili9341_width = ILI9341_WIDTH;
+            g_ili9341_height = ILI9341_HEIGHT;
+        break;
+        case 1:
+            ili9341_data(ILI9341_MADCTL_MV | ILI9341_MADCTL_RGB, spi, gpio);
+            g_ili9341_width = ILI9341_HEIGHT;
+            g_ili9341_height = ILI9341_WIDTH;
+        break;
+        case 2:
+            ili9341_data(ILI9341_MADCTL_MY | ILI9341_MADCTL_RGB, spi, gpio);
+            g_ili9341_width = ILI9341_WIDTH;
+            g_ili9341_height = ILI9341_HEIGHT;
+        break;
+        case 3:
+            ili9341_data(ILI9341_MADCTL_MX | ILI9341_MADCTL_MY | ILI9341_MADCTL_MV | ILI9341_MADCTL_RGB, spi, gpio);
+            g_ili9341_width = ILI9341_HEIGHT;
+            g_ili9341_height = ILI9341_WIDTH;
+        break;
+    }
+    gpio_out(gpio, ILI9341_CE, 1);
+}
+
+uint8_t ili9341_get_rotation() {
+    return rotation;
+}
+
+uint16_t ili9341_get_width() {
+    return g_ili9341_width;
+}
+
+uint16_t ili9341_get_height() {
+    return g_ili9341_height;
+}
+
+void ili9341_tearing_off(spi_t *spi, gpio_t *gpio) {
+    gpio_out(gpio, ILI9341_CE, 0);
+
+    ili9341_command(ILI9341_TEOFF , spi, gpio);
+
+    gpio_out(gpio, ILI9341_CE, 1);
+}
+
+void ili9341_tearing_on(spi_t *spi, gpio_t *gpio) {
+    gpio_out(gpio, ILI9341_CE, 0);
+
+    ili9341_command(ILI9341_TEON , spi, gpio); 
+
     gpio_out(gpio, ILI9341_CE, 1);
 }

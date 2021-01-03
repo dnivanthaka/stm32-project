@@ -63,15 +63,29 @@
 #define ILI9341_GMMPOSI        0xE0
 #define ILI9341_GMMNEG         0xE1
 
+#define ILI9341_MADCTL_MY      0x80
+#define ILI9341_MADCTL_MX      0x40
+#define ILI9341_MADCTL_MV      0x20
+#define ILI9341_MADCTL_RGB     0x00
+#define ILI9341_MADCTL_BGR     0x08
+
+
 void ili9341_init(spi_t *spi, gpio_t *gpio);
 void ili9341_swreset(spi_t *spi, gpio_t *gpio);
-void ili9341_hwreset(spi_t *spi, gpio_t *gpio);
+void ili9341_hwreset(gpio_t *gpio);
 void ili9341_command(uint8_t cmd, spi_t *spi, gpio_t *gpio);
 void ili9341_data(uint8_t dta, spi_t *spi, gpio_t *gpio);
 void ili9341_set_addr_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, spi_t *spi, gpio_t *gpio);
 void ili9341_streampixel(uint16_t color, spi_t *spi);
+void ili9341_streampixel_bytes(uint16_t color, uint16_t count, spi_t *spi);
 void ili9341_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h,uint16_t color, spi_t *spi, gpio_t *gpio);
 void ili9341_fill_screen(uint16_t color, spi_t *spi, gpio_t *gpio);
 void ili9341_draw_pixel(int16_t x, int16_t y, uint16_t color, spi_t *spi, gpio_t *gpio);
+void ili9341_set_rotation(uint8_t m, spi_t *spi, gpio_t *gpio);
+uint8_t ili9341_get_rotation();
+uint16_t ili9341_get_width();
+uint16_t ili9341_get_height();
+void ili9341_tearing_off();
+void ili9341_tearing_on();
 
 #endif

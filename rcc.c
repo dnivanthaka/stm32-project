@@ -70,7 +70,7 @@ void _delay_us(timer_t *tim, uint32_t delay) {
     } 
 
     tim->psc = 0;
-    tim->arr = 71;
+    tim->arr = 719;
     tim->sr = 0;
     tim->cr1 = 1;
     while(delay--){
@@ -86,7 +86,7 @@ void _delay_ms(timer_t *tim, uint32_t delay) {
     } 
 
     tim->psc = 7200 - 1;   //72Mhz / 7200 => 10Khz = 1/100 = 0.1ms
-    tim->arr = 10 - 1; //0.1ms * 10 = 1ms
+    tim->arr = 100 - 1; //0.1ms * 10 = 1ms
     tim->sr = 0;
     tim->cr1 = 1;
     while(delay--){

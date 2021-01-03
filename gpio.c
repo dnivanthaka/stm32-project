@@ -6,6 +6,7 @@
 
 void gpio_init(gpio_t *gpio, rcc_t *rcc, uint8_t pin, uint8_t mode){
  uint8_t i = 0;
+ _disable_irq();
 
  if(gpio == (struct gpio_t *)GPIOABASE){
   rcc->apb2enr |= GPIO_IOPAEN;
@@ -27,15 +28,18 @@ void gpio_init(gpio_t *gpio, rcc_t *rcc, uint8_t pin, uint8_t mode){
     //set as pull up
     //gpio->odr = (1 << pin);
  }
+ _enable_irq();
 }
 
 
 
 void gpio_out(gpio_t *gpio, uint8_t pin, uint8_t value){
  uint8_t reg_val = 0;
+ _disable_irq();
 
  if(value == 0) reg_val = 16;
  gpio->bsrr = 1 << (pin + reg_val);
+ _enable_irq();
 }
 
 uint8_t gpio_in(gpio_t *gpio, uint8_t pin){
