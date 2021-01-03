@@ -12,39 +12,40 @@
 #include "interrupts.h"
 #include "keypad.h"
 #include "timer.h"
+#include "ili9341.h"
 
 
 //screen routines
 
-#define SCREEN_WIDTH  ST7735_TFTWIDTH
-#define SCREEN_HEIGHT ST7735_TFTHEIGHT
+#define SCREEN_WIDTH ili9341_get_width()
+#define SCREEN_HEIGHT ili9341_get_height()
 
 inline void screen_init() {
-    st7735_init(GPIOA, SPI1);
+    ili9341_init(SPI1, GPIOA);
 }
 
 inline void screen_reset() {
-    st7735_hwreset(GPIOA);
+    ili9341_hwreset(GPIOA);
 }
 
 inline void screen_fill(uint16_t color) {
-    st7735_fill_screen(color, GPIOA, SPI1);
+    ili9341_fill_screen(color, SPI1, GPIOA);
 }
 
 inline void screen_set_addr_window(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
-    st7735_set_addr_window(x0, y0, x1, y1, GPIOA, SPI1);
+    ili9341_set_addr_window(x0, y0, x1, y1, SPI1, GPIOA);
 }
 
 inline void screen_streampixel(uint16_t color) {
-    st7735_streampixel(color, SPI1);
+    ili9341_streampixel(color, SPI1);
 }
 
 inline void screen_putpixel(int16_t x, int16_t y, uint16_t color) {
-    st7735_draw_pixel(x,  y, color, GPIOA, SPI1);
+    ili9341_draw_pixel(x,  y, color, SPI1, GPIOA);
 }
 
 inline void screen_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h,uint16_t color) {
-    st7735_fill_rect(x, y, w, h, color, GPIOA, SPI1);
+    ili9341_fill_rect(x, y, w, h, color, SPI1, GPIOA);
 }
 
 inline void system_init() {
@@ -75,7 +76,8 @@ inline void system_init() {
 
     gpio_init(GPIOA, RCC, 5,  GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_ALT_PUSH);
     //gpio_init(gpio_a, rcc, 5,  GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
-    gpio_init(GPIOA, RCC, 6,  GPIO_MODE_INPUT | GPIO_CNF_IN_PULL);
+    //gpio_init(GPIOA, RCC, 6,  GPIO_MODE_INPUT | GPIO_CNF_IN_PULL);
+    gpio_init(GPIOA, RCC, 6,  GPIO_MODE_INPUT | GPIO_CNF_IN_FLOAT);
     gpio_init(GPIOA, RCC, 7,  GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_ALT_PUSH);
 
     gpio_init(GPIOB, RCC, 6,  GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_ALT_OPEN);              //I2C pins
@@ -122,10 +124,11 @@ inline void system_init() {
     keypad_init(I2C1, RCC);
 
     screen_init();
-    st7735_set_rotation(0xA8, GPIOA, SPI1);            //MY=1, MX=0, MV=1, RGB=1 (for backtab RGB=0)
+    ili9341_set_rotation(3, SPI1, GPIOA);
+    //st7735_set_rotation(0xA8, GPIOA, SPI1);            //MY=1, MX=0, MV=1, RGB=1 (for backtab RGB=0)
     screen_fill(Color565(0, 0, 0));
 
-    st7735_tearing_off(GPIOA, SPI1);
+    //st7735_tearing_off(GPIOA, SPI1);
 
     //we start interrupts
     systick_interrupt_start(SYSTICK);
