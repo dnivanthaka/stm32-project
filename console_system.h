@@ -17,35 +17,35 @@
 
 //screen routines
 
-#define SCREEN_WIDTH  ST7735_TFTWIDTH
-#define SCREEN_HEIGHT ST7735_TFTHEIGHT
+#define SCREEN_WIDTH ili9341_get_width()
+#define SCREEN_HEIGHT ili9341_get_height()
 
 inline void screen_init() {
-    st7735_init(GPIOA, SPI1);
+    ili9341_init(SPI1, GPIOA);
 }
 
 inline void screen_reset() {
-    st7735_hwreset(GPIOA);
+    ili9341_hwreset(GPIOA);
 }
 
 inline void screen_fill(uint16_t color) {
-    st7735_fill_screen(color, GPIOA, SPI1);
+    ili9341_fill_screen(color, SPI1, GPIOA);
 }
 
 inline void screen_set_addr_window(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
-    st7735_set_addr_window(x0, y0, x1, y1, GPIOA, SPI1);
+    ili9341_set_addr_window(x0, y0, x1, y1, SPI1, GPIOA);
 }
 
 inline void screen_streampixel(uint16_t color) {
-    st7735_streampixel(color, SPI1);
+    ili9341_streampixel(color, SPI1);
 }
 
 inline void screen_putpixel(int16_t x, int16_t y, uint16_t color) {
-    st7735_draw_pixel(x,  y, color, GPIOA, SPI1);
+    ili9341_draw_pixel(x,  y, color, SPI1, GPIOA);
 }
 
 inline void screen_fill_rect(int16_t x, int16_t y, int16_t w, int16_t h,uint16_t color) {
-    st7735_fill_rect(x, y, w, h, color, GPIOA, SPI1);
+    ili9341_fill_rect(x, y, w, h, color, SPI1, GPIOA);
 }
 
 inline void system_init() {
@@ -123,21 +123,15 @@ inline void system_init() {
     //need to do it after initializing interrupts, would freeze since the mcp23017 intrrupt fires immediately
     keypad_init(I2C1, RCC);
 
-    //screen_init();
+    screen_init();
+    ili9341_set_rotation(3, SPI1, GPIOA);
     //st7735_set_rotation(0xA8, GPIOA, SPI1);            //MY=1, MX=0, MV=1, RGB=1 (for backtab RGB=0)
-    //screen_fill(Color565(0, 0, 0));
+    screen_fill(Color565(0, 0, 0));
 
     //st7735_tearing_off(GPIOA, SPI1);
 
-    ili9341_init(SPI1, GPIOA);
-    ili9341_fill_screen(Color565(0, 255, 0), SPI1, GPIOA);
-    ili9341_draw_pixel(0, 0, Color565(255, 0, 0), SPI1, GPIOA);
-
     //we start interrupts
     systick_interrupt_start(SYSTICK);
-
-
-    while(1);
 }
 
 #endif

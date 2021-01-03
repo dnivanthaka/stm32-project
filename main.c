@@ -12,6 +12,7 @@
 #include "sound.h"
 #include "console_system.h"
 #include "adc.h"
+#include "bitmap.h"
 
 #define FPSCOUNT 1000/30 //(30fps) in ms
 
@@ -210,6 +211,14 @@ void run_demo() {
         draw_rect(rand() % (SCREEN_WIDTH - 20), rand() % (SCREEN_HEIGHT - 50), rand() % 100, rand() % 50, Color565(rand() % 255, rand() % 255, rand() % 255));
     }
 
+    //draw bitmap
+    /*
+    for(int y=0;y<100;y++){
+        for(int x=0;x<100;x++){
+            ili9341_draw_pixel(x, y, demo_image[x * y + 100], SPI1, GPIOA);
+        }
+    }
+    */
 }
 
 void beep() {
@@ -255,7 +264,7 @@ int main(){
     screen_fill(Color565(0,0,0));
 
     int x_vel = 0, y_vel = 0;
-    uint8_t x_pos = 0, y_pos = 0, x_prev = 0, y_prev = 0;
+    uint16_t x_pos = 0, y_pos = 0, x_prev = 0, y_prev = 0;
 	uint8_t inp;
     
     //draw_line(0, 0, 100, 100, Color565(255,0,0));
@@ -270,7 +279,6 @@ int main(){
     soundq_push(1, 200);
 
     while(1){
-
 
     soundq_process();
 	//if(keypadkeys == 0xffff){
