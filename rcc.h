@@ -57,19 +57,35 @@
 #define SYT_INT      (1 << 1)
 
 
-typedef struct rcc_t {
+typedef struct {
     volatile uint32_t cr;
+    volatile uint32_t pllcfgr;
     volatile uint32_t cfgr;
     volatile uint32_t cir;
+
+    volatile uint32_t ahb1rstr;
+    volatile uint32_t ahb2rstr;
+
+    volatile uint32_t apb1rstr;
     volatile uint32_t apb2rstr;
-    volatile uint32_t abp1rstr;
-    volatile uint32_t ahbenr;
-    volatile uint32_t apb2enr;
+
+    volatile uint32_t ahb1enr;
+    volatile uint32_t ahb2enr;
+
     volatile uint32_t apb1enr;
+    volatile uint32_t apb2enr;
+
+    volatile uint32_t ahb1lpenr;
+    volatile uint32_t ahb2lpenr;
+
+    volatile uint32_t apb1lpenr;
+    volatile uint32_t apb2lpenr;
+
     volatile uint32_t bdcr;
     volatile uint32_t csr;
-    volatile uint32_t ahbrstr;
-    volatile uint32_t cfgr2;
+    volatile uint32_t sscgr;
+    volatile uint32_t plli2scfgr;
+    volatile uint32_t dckcfgr;
 } rcc_t;
 
 typedef struct systick_t {

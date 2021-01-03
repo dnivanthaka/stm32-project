@@ -22,12 +22,16 @@
 
 
 typedef struct gpio_t {
-    volatile uint32_t cr[2];
+    volatile uint32_t moder;
+    volatile uint32_t otyper;
+    volatile uint32_t ospeedr;
+    volatile uint32_t pupdr;
     volatile uint32_t idr;
     volatile uint32_t odr;
     volatile uint32_t bsrr;
-    volatile uint32_t brr;
     volatile uint32_t lckr;
+    volatile uint32_t afrl;
+    volatile uint32_t afrh;
 } gpio_t;
 
 void gpio_init(gpio_t *gpio, rcc_t *rcc, uint8_t pin, uint8_t mode);
