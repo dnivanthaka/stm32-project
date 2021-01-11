@@ -49,13 +49,23 @@
 
 /* Bits in the clock control register CCR */
 #define PLL_ENABLE	0x01000000
-#define FLASH_ACR      ((volatile uint32_t *) 0x40022000)
+//#define FLASH_ACR      ((volatile uint32_t *) 0x40022000)
 
 #define SYT_COUNTF   (1 << 16)
 #define SYT_SRC      (1 << 2)
 #define SYT_ENABLE   (1)
 #define SYT_INT      (1 << 1)
 
+#define PLL_N_192	(192 << 6)
+#define PLL_P_DIV_2	(PLL_P_2 << 16)
+#define PLL_Q_VAL	(4 << 24)
+#define PLL_P_VAL_96	(0 << 16)	
+#define PLL_M_VAL	25 //1Mhz as input to PLL	
+
+#define PLL_VAL (PLL_M_VAL | PLL_N_192 | PLL_P_VAL_96 | PLL_Q_VAL)
+#define PLL_MASK (0x0f437fff)
+
+#define FLASHBASE 0x40023C00
 
 typedef struct {
     volatile uint32_t cr;
@@ -66,27 +76,46 @@ typedef struct {
     volatile uint32_t ahb1rstr;
     volatile uint32_t ahb2rstr;
 
+    uint32_t pad1[2];  //8 bytes
+
     volatile uint32_t apb1rstr;
     volatile uint32_t apb2rstr;
+
+    uint32_t pad2[2];  //8 bytes
 
     volatile uint32_t ahb1enr;
     volatile uint32_t ahb2enr;
 
+    uint32_t pad3[2];  //8 bytes
+
     volatile uint32_t apb1enr;
     volatile uint32_t apb2enr;
+
+    uint32_t pad4[2];  //8 bytes
 
     volatile uint32_t ahb1lpenr;
     volatile uint32_t ahb2lpenr;
 
+    uint32_t pad5[2];  //8 bytes
+
     volatile uint32_t apb1lpenr;
     volatile uint32_t apb2lpenr;
 
+    uint32_t pad6[2];  //8 bytes
+
     volatile uint32_t bdcr;
     volatile uint32_t csr;
+
+    uint32_t pad7[2];  //8 bytes
+    
     volatile uint32_t sscgr;
     volatile uint32_t plli2scfgr;
+
+    uint32_t pad8;  //4 bytes
+    
     volatile uint32_t dckcfgr;
 } rcc_t;
+
 
 typedef struct systick_t {
     volatile uint32_t ctrl;
@@ -95,12 +124,22 @@ typedef struct systick_t {
     volatile uint32_t calib;
 } systick_t;
 
+struct flash {
+    volatile uint32_t acr;
+    volatile uint32_t keyr;
+    volatile uint32_t optkeyr;
+    volatile uint32_t sr;
+    volatile uint32_t cr;
+    volatile uint32_t optcr;
+};
+
 void rcc_init(rcc_t *rcc);
 void systick_init(systick_t *syt);
 //void delay_ms(systick_t *syt, uint32_t count);
 void _delay_ms(timer_t *tim, uint32_t count);
 void _delay_us(timer_t *tim, uint32_t count);
-void rcc_setup_cpu(rcc_t *rcc, uint32_t pll_clk, uint32_t apb_clk);
+void rcc_cpu_clk_96(rcc_t *rcc);
+//void rcc_setup_cpu(rcc_t *rcc, uint32_t pll_clk, uint32_t apb_clk);
 void systick_interrupt_start(systick_t *syt);
 void systick_counter_set(uint32_t val);
 uint32_t systick_counter_get();

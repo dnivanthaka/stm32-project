@@ -1,5 +1,5 @@
-#ifndef STM32F103_H
-#define STM32F103_H
+#ifndef STM32F411CX_H
+#define STM32F411CX_H
 
 #include "types.h"
 #include "interrupts.h"
@@ -10,15 +10,14 @@
 #include "i2c.h"
 #include "usart.h"
 
+#define SYSTEM_CORE_CLOCK 96000000
 
-#define SYSTEM_CORE_CLOCK 72000000
+#define GPIOABASE   0x40020000
+#define GPIOBBASE   0x40020400
+#define GPIOCBASE   0x40020800
 
-#define GPIOABASE   0x40010800
-#define GPIOBBASE   0x40010C00
-#define GPIOCBASE   0x40011000
+#define RCCBASE     0x40023800
 
-#define RCCBASE     0x40021000
-#define PLL_LOCK    0x02000000
 #define SYSTICKBASE 0xE000E010
 
 #define EXTIBASE    0x40010400 
@@ -33,17 +32,17 @@
 #define I2C1BASE    0x40005400
 #define I2C2BASE    0x40005800
 
-#define USART1BASE  0x40013800
+#define USART1BASE  0x40011000 
 #define USART2BASE  0x40004400
 
 #define ADC1BASE    0x40012400
-#define ADC2BASE    0x40012800
+//#define ADC2BASE    0x40012800
 
-#define TIM1BASE    0x40012C00
+#define TIM1BASE    0x40010000
 #define TIM2BASE    0x40000000
 #define TIM3BASE    0x40000400
 #define TIM4BASE    0x40000800
-#define TIM5BASE    0x40000800
+#define TIM5BASE    0x40000C00
 
 #define RCC     ((rcc_t *) RCCBASE)
 #define SYSTICK ((systick_t *) SYSTICKBASE)

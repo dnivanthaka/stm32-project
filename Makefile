@@ -8,7 +8,7 @@ TOOLS = arm-none-eabi
 AS = $(TOOLS)-as
 # Use the -g flag if you intend to use gdb
 #CC = $(TOOLS)-gcc -mcpu=cortex-m3 -mthumb, added -Os flag to optimize code generation
-CC = $(TOOLS)-gcc -mcpu=cortex-m3 -mthumb -g -Os
+CC = $(TOOLS)-gcc -mcpu=cortex-m4 -mthumb -g -Os
 
 #LD = $(TOOLS)-gcc
 LD = $(TOOLS)-ld.bfd
@@ -27,7 +27,7 @@ main.bin:	main.elf
 	$(OBJCOPY) main.elf main.bin -O binary
 
 main.elf: 	$(OBJS)
-	$(LD) -Aarch=armv7-m -T main.lds -o main.elf $(OBJS)
+	$(LD) -T main.lds -o main.elf $(OBJS)
 
 start.o:	start.s
 	$(AS) start.s -o start.o

@@ -1,10 +1,10 @@
 #include "types.h"
-#include "stmf103xxx.h"
+#include "stm32f411cx.h"
 #include "console_system.h"
 #include "adc.h"
 
 void adc_init(adc_t *adc) {
-    gpio_init(GPIOA, RCC, 1, GPIO_MODE_INPUT | GPIO_CNF_IN_ANALOG);
+    gpio_init(GPIOA, RCC, 1, GPIO_CNF_IN | GPIO_PULL_NONE | GPIO_CNF_ANALOG, GPIO_AF0_SYS);
     RCC->apb2enr |= (1 << 9);
 
     adc->cr2 = 1; //ADON

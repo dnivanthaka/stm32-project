@@ -1,5 +1,5 @@
 #include "types.h"
-#include "stmf103xxx.h"
+#include "stm32f411cx.h"
 #include "timer.h"
 #include "rcc.h"
 
@@ -9,6 +9,8 @@ static uint16_t g_seed;
 //Interrupt handler
 void systick_handler() {
     systick_counter++;
+
+    gpio_out(GPIOA, 13, 1);
 }
 
 /*
@@ -43,7 +45,8 @@ uint32_t systick_counter_get() {
 }
 
 void rcc_init(rcc_t *rcc){
- rcc_setup_cpu(rcc, PLL_9, PPRE2_8);
+ //rcc_setup_cpu(rcc, PLL_9, PPRE2_8);
+ rcc_cpu_clk_96(rcc);
 }
 
 void delay_ms_old(systick_t *syt, uint32_t val){
@@ -70,7 +73,7 @@ void _delay_us(timer_t *tim, uint32_t delay) {
     } 
 
     tim->psc = 0;
-    tim->arr = 719;
+    tim->arr = 959;
     tim->sr = 0;
     tim->cr1 = 1;
     while(delay--){
@@ -85,7 +88,7 @@ void _delay_ms(timer_t *tim, uint32_t delay) {
         RCC->apb1enr |= 1 << 1; 
     } 
 
-    tim->psc = 7200 - 1;   //72Mhz / 7200 => 10Khz = 1/100 = 0.1ms
+    tim->psc = 9600 - 1;   //72Mhz / 7200 => 10Khz = 1/100 = 0.1ms
     tim->arr = 100 - 1; //0.1ms * 10 = 1ms
     tim->sr = 0;
     tim->cr1 = 1;
@@ -96,6 +99,7 @@ void _delay_ms(timer_t *tim, uint32_t delay) {
     tim->cr1 = 0; //stop counter
 }
 
+/*
 void rcc_setup_cpu(rcc_t *rcc, uint32_t pll_clk, uint32_t apb_clk){
  //Enable HSE
  rcc->cr |= (1 << 16);
@@ -113,6 +117,30 @@ void rcc_setup_cpu(rcc_t *rcc, uint32_t pll_clk, uint32_t apb_clk){
 
  rcc->cfgr = (rcc->cfgr | 0b10) & ~1 | apb_clk; // ABP = CLK / 8
  while(! (rcc->cfgr & (1 << 3)));
+}
+*/
+
+void rcc_cpu_clk_96(rcc_t *rcc) {
+    //setting flash wait states
+    struct flash *f = (struct flash *)FLASHBASE;
+    f->acr &= ~0x0f;
+    f->acr |= 3;
+
+    //Turn HSE ON
+    rcc->cr |= (1 << 16);
+    while(! (rcc->cr & (1 << 17)));
+
+    rcc->pllcfgr &= ~PLL_MASK;
+    rcc->pllcfgr |= PLL_VAL;
+    rcc->pllcfgr |= (1 << 22); //select HSE
+
+    //Turn on PLL
+    rcc->cr |= (1 << 24);
+    while(! (rcc->cr & (1 << 25)));
+
+    rcc->cfgr &= (0x3 << 8);
+    rcc->cfgr |= 2; //HSE is selected
+    rcc->cfgr |= (4 << 10); //APB = CLK/2
 }
 
 

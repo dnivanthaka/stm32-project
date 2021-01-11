@@ -1,6 +1,6 @@
 #include "types.h"
+#include "stm32f411cx.h"
 #include "sound.h"
-#include "stmf103xxx.h"
 
 #define SOUNDQ_SIZE 8
 
