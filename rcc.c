@@ -10,7 +10,6 @@ static uint16_t g_seed;
 void systick_handler() {
     systick_counter++;
 
-    gpio_out(GPIOA, 13, 1);
 }
 
 /*
@@ -23,7 +22,7 @@ void systick_init(systick_t *syt){
  syt->ctrl &= ~SYT_COUNTF;
  syt->ctrl &= ~SYT_SRC;
 
- syt->calib = 0x0002328;        //9Mhz
+ syt->calib = 0x00061a8;        //25Mhz
 
  syt->load  = 0;
 }
