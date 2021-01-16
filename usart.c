@@ -19,7 +19,7 @@ void usart_init(usart_t *usart){
  usart->cr3 = 0;
  usart->gtpr = 0;
 
- usart->brr = 9000000 / 9600;
+ usart->brr = 9600000 / 9600;
  usart->cr1 |= CR1_TE | CR1_RE;
  //usart1->cr1 = 0x200C;
  _enable_irq();

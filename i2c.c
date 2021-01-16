@@ -11,27 +11,30 @@ void PUT32(uint32_t, uint32_t);
 unsigned int GET32(uint32_t);
 
 void i2c_init(i2c_t *i2c, rcc_t *rcc){
-    _disable_irq();
+    //_disable_irq();
 
     //enable i2c clocks, should have gpio clocks enabled	
     if(i2c == (struct i2c_t *)I2C1BASE){
-   	rcc->apb1enr |= (1 << 21); 
+   	    rcc->apb1enr |= (1 << 21); 
     }else if(i2c == (struct i2c_t *)I2C2BASE){
-   	rcc->apb1enr |= (1 << 22); 
+   	    rcc->apb1enr |= (1 << 22); 
     }
 
-    i2c->ccr |= 0x00B4;
-    i2c->trise = 37;
+    //i2c->ccr |= 0x00B4;
+    i2c->ccr |= (50 << 0);
+    //i2c->trise = 37;
+    i2c->trise |= (11 << 0); //100Khz
 
     //Set clock speed APB
-    i2c->cr2 = 0x0020;
+    //i2c->cr2 = 0x0020;
+    i2c->cr2 = (10 << 0); //10Mhz peripheral clock
 
-    //i2c->oar1 = 0 << 15;
-    //i2c->oar1 |= 1 << 14;
+    i2c->oar1 |= 0 << 1;
+    i2c->oar1 |= 1 << 14;
     //i2c->oar2 |= 0b10101100;
 
     i2c->cr1 = 1;
-    _enable_irq();
+    //_enable_irq();
 }
 
 void i2c_wait_for_ready(i2c_t *i2c){

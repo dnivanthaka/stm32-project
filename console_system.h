@@ -75,18 +75,26 @@ inline void system_init() {
     gpio_init(GPIOC, RCC, 13, GPIO_CNF_GP_OUT | GPIO_CNF_OUT_PUSH | GPIO_MODE_OUT_HIGH, GPIO_AF0_SYS);
     //gpio_out(GPIOC, 13, 0);
 
-    gpio_init(GPIOA, RCC, 5,   GPIO_CNF_GP_OUT | GPIO_CNF_OUT_PUSH | GPIO_MODE_OUT_HIGH, GPIO_AF0_SYS);
+    //gpio_init(GPIOA, RCC, 5,   GPIO_CNF_ALT | GPIO_PULL_NONE | GPIO_MODE_OUT_HIGH, GPIO_AF5_SPI1_4);
     //gpio_init(gpio_a, rcc, 5,  GPIO_MODE_OUT_50_MHZ | GPIO_CNF_OUT_PUSH);
     //gpio_init(GPIOA, RCC, 6,  GPIO_MODE_INPUT | GPIO_CNF_IN_PULL);
-    gpio_init(GPIOA, RCC, 6,  GPIO_CNF_IN | GPIO_PULL_NONE, GPIO_AF0_SYS);
-    gpio_init(GPIOA, RCC, 7,  GPIO_CNF_GP_OUT | GPIO_CNF_OUT_PUSH | GPIO_MODE_OUT_HIGH, GPIO_AF0_SYS);
+    //gpio_init(GPIOA, RCC, 6,  GPIO_CNF_IN | GPIO_PULL_NONE, GPIO_AF0_SYS);
+    //gpio_init(GPIOA, RCC, 7,  GPIO_CNF_ALT | GPIO_PULL_NONE | GPIO_MODE_OUT_HIGH, GPIO_AF5_SPI1_4);
 
-    gpio_init(GPIOB, RCC, 6,  GPIO_CNF_ALT | GPIO_PULL_NONE, GPIO_AF4_I2C1_3);              //I2C pins
-    gpio_init(GPIOB, RCC, 7,  GPIO_CNF_ALT | GPIO_PULL_NONE, GPIO_AF4_I2C1_3);
+    //sck
+   gpio_init(GPIOA, RCC, 5,  GPIO_CNF_ALT | GPIO_MODE_OUT_HIGH, GPIO_AF5_SPI1_4);
+   //mosi
+   gpio_init(GPIOA, RCC, 7,  GPIO_CNF_ALT | GPIO_MODE_OUT_HIGH, GPIO_AF5_SPI1_4);
+   //miso
+   //gpio_init(gpioa, rcc, 6,  GPIO_CNF_ALT | GPIO_MODE_OUT_HIGH, GPIO_AF5_SPI1_4);
+   gpio_init(GPIOA, RCC, 6,  GPIO_CNF_ALT | GPIO_PULL_NONE | GPIO_MODE_OUT_HIGH, GPIO_AF5_SPI1_4);
+
+    gpio_init(GPIOB, RCC, 6,  GPIO_CNF_ALT | GPIO_CNF_OUT_OPEN | GPIO_PULL_NONE, GPIO_AF4_I2C1_3);              //I2C pins
+    gpio_init(GPIOB, RCC, 7,  GPIO_CNF_ALT | GPIO_CNF_OUT_OPEN | GPIO_PULL_NONE, GPIO_AF4_I2C1_3);
 
     // Disable Reset
-    RCC->apb2rstr &= ~(1 << 14);
-    RCC->apb2rstr &= ~(1 << 12);
+    //RCC->apb2rstr &= ~(1 << 14);
+    //RCC->apb2rstr &= ~(1 << 12);
 
     //Enable USART1 clock
     RCC->apb2enr |= (1 << 4);
@@ -122,8 +130,10 @@ inline void system_init() {
     //nvic_enable_irq(EXTI4_IRQ);
 
 
+    //gpio_out(GPIOC, 13, 1);
     //need to do it after initializing interrupts, would freeze since the mcp23017 intrrupt fires immediately
     keypad_init(I2C1, RCC);
+
 
     screen_init();
     ili9341_set_rotation(3, SPI1, GPIOA);

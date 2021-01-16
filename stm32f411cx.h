@@ -9,6 +9,7 @@
 #include "spi.h"
 #include "i2c.h"
 #include "usart.h"
+#include "adc.h"
 
 #define SYSTEM_CORE_CLOCK 96000000
 
@@ -35,7 +36,7 @@
 #define USART1BASE  0x40011000 
 #define USART2BASE  0x40004400
 
-#define ADC1BASE    0x40012400
+#define ADC1BASE    0x40012000
 //#define ADC2BASE    0x40012800
 
 #define TIM1BASE    0x40010000
@@ -53,6 +54,8 @@
 #define GPIOA ((gpio_t *) GPIOABASE)
 #define GPIOB ((gpio_t *) GPIOBBASE)
 #define GPIOC ((gpio_t *) GPIOCBASE)
+
+#define ADC1 ((adc_t *) ADC1BASE)
 
 #define SPI1 ((spi_t *) SPI1BASE)
 #define SPI2 ((spi_t *) SPI2BASE)

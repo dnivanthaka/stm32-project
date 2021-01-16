@@ -23,6 +23,7 @@ typedef struct i2c_t {
     volatile uint32_t sr2;
     volatile uint32_t ccr;
     volatile uint32_t trise;
+    volatile uint32_t fltr;
 } i2c_t;
 
 void i2c_init(i2c_t *i2c, rcc_t *rcc);

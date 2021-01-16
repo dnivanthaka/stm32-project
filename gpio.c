@@ -3,6 +3,7 @@
 #include "rcc.h"
 #include "gpio.h"
 
+
 void gpio_init(gpio_t *gpio, rcc_t *rcc, uint8_t pin, uint8_t mode, uint8_t afmode) {
  uint8_t i = 0;
  //_disable_irq();
@@ -21,16 +22,12 @@ void gpio_init(gpio_t *gpio, rcc_t *rcc, uint8_t pin, uint8_t mode, uint8_t afmo
  //set mode
  gpio->moder |= ((mode & 0x03) << shift);
  if(mode & 0x03){
-   gpio->otyper &= ~(1 << pin);
-   gpio->otyper |= (((mode & 0x04) >> 2) << pin);
-        gpio->ospeedr &= ~(3 << shift); 
-        gpio->ospeedr |= (((mode & 0x30) >> 4) << shift);
-   /*if(mode & 0x01){
-        //output
-        //set speed
-        gpio->ospeedr &= ~(3 << shift); 
-        gpio->ospeedr |= (((mode & 0x30) >> 4) << shift);
-   }else if(mode & 0x02){
+    gpio->otyper &= ~(1 << pin);
+    gpio->otyper |= (((mode & 0x04) >> 2) << pin);
+
+    gpio->ospeedr &= ~(3 << shift); 
+    gpio->ospeedr |= (((mode & 0x30) >> 4) << shift);
+   if(mode & 0x02){
         //ALT
         if(pin < 8){
             shift = pin * 4;
@@ -41,7 +38,7 @@ void gpio_init(gpio_t *gpio, rcc_t *rcc, uint8_t pin, uint8_t mode, uint8_t afmo
             gpio->afrh &= ~(0xf << shift);
             gpio->afrh |= (afmode << shift);
         }
-   }*/ 
+   } 
  }else{
      //input
    //pullup

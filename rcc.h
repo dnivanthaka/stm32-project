@@ -66,6 +66,9 @@
 #define PLL_MASK (0x0f437fff)
 
 #define FLASHBASE 0x40023C00
+#define FLASH_DCEN    (1 << 10)
+#define FLASH_ICEN    (1 << 9)
+#define FLASH_PRFTEN  (1 << 8)
 
 typedef struct {
     volatile uint32_t cr;

@@ -88,7 +88,7 @@ void _delay_ms(timer_t *tim, uint32_t delay) {
     } 
 
     tim->psc = 9600 - 1;   //72Mhz / 7200 => 10Khz = 1/100 = 0.1ms
-    tim->arr = 100 - 1; //0.1ms * 10 = 1ms
+    tim->arr = 1000 - 1; //0.1ms * 10 = 1ms
     tim->sr = 0;
     tim->cr1 = 1;
     while(delay--){
@@ -140,6 +140,9 @@ void rcc_cpu_clk_96(rcc_t *rcc) {
     rcc->cfgr &= (0x3 << 8);
     rcc->cfgr |= 2; //HSE is selected
     rcc->cfgr |= (4 << 10); //APB = CLK/2
+
+    //Enable flash cache
+    f->acr |= FLASH_DCEN | FLASH_ICEN | FLASH_PRFTEN;
 }
 
 

@@ -250,10 +250,13 @@ int main(){
     uint32_t *tmp = (uint32_t *)0x20000100;
 
     system_init();
-    adc_t *ADC1 = (adc_t *)ADC1BASE; 
+    //gpio_out(GPIOC, 13, 1);
+    //adc_t *ADC1 = (adc_t *)ADC1BASE; 
     adc_init(ADC1);
 
     srand(systick_counter_get() + (*tmp) + (adc_get(ADC1) & 0x001f) + (adc_get(ADC1) & 0x001f) + ((adc_get(ADC1)) << 4));
+    //srand(systick_counter_get() + (*tmp));
+
 
     adc_off(ADC1);
 
@@ -261,8 +264,18 @@ int main(){
     //gpio_out(gpio_c, 13, 0);
     ledVal = 0;
 
+    /*while(1){
+    gpio_out(GPIOC, 13, 0);
+    delay_ms(500);
+    gpio_out(GPIOC, 13, 1);
+    delay_ms(500);
+
+
+    }*/
+
     screen_fill(Color565(0,0,0));
 
+    gpio_out(GPIOC, 13, 1);
     int x_vel = 0, y_vel = 0;
     uint16_t x_pos = 0, y_pos = 0, x_prev = 0, y_prev = 0;
 	uint8_t inp;
@@ -279,6 +292,7 @@ int main(){
     soundq_push(1, 200);
 
     while(1){
+
 
     soundq_process();
 	//if(keypadkeys == 0xffff){
